@@ -246,7 +246,7 @@ export const AppProvider = ({ children }) => {
 
   // Sync user login session state locally
   useEffect(() => {
-    const savedUser = localStorage.getItem('antigravity_current_user');
+    const savedUser = sessionStorage.getItem('antigravity_current_user');
     if (savedUser) setUser(JSON.parse(savedUser));
   }, []);
 
@@ -261,9 +261,9 @@ export const AppProvider = ({ children }) => {
 
   useEffect(() => {
     if (user) {
-      localStorage.setItem('antigravity_current_user', JSON.stringify(user));
+      sessionStorage.setItem('antigravity_current_user', JSON.stringify(user));
     } else {
-      localStorage.removeItem('antigravity_current_user');
+      sessionStorage.removeItem('antigravity_current_user');
     }
   }, [user]);
 

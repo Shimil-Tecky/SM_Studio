@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import { Shield, Lock, User, KeyRound, ChevronRight } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 
 export default function AdminLogin() {
   const { user, loginAdmin } = useContext(AppContext);
@@ -93,6 +94,28 @@ export default function AdminLogin() {
           <h2 className="font-serif" style={{ fontSize: '1.8rem', color: '#fff' }}>Admin Access</h2>
           <div style={{ width: '30px', height: '1.5px', backgroundColor: 'var(--gold-primary)', margin: '0.75rem auto 0' }}></div>
         </div>
+
+        {!supabase && (
+          <div style={{
+            backgroundColor: 'rgba(212, 175, 55, 0.08)',
+            border: '1px solid rgba(212, 175, 55, 0.3)',
+            color: 'var(--gold-primary)',
+            padding: '0.8rem 1rem',
+            borderRadius: 'var(--radius-md)',
+            fontSize: '0.8rem',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.25rem',
+            lineHeight: '1.4'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 'bold' }}>
+              <span>⚠️</span>
+              <span>Offline Sandbox Mode</span>
+            </div>
+            <span>Your Vercel environment variables are not configured. The app is falling back to the local database. To use Supabase, configure `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Vercel Settings.</span>
+          </div>
+        )}
 
         {error && (
           <div style={{

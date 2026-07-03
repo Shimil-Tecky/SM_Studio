@@ -8,6 +8,7 @@ import {
   CalendarDays, Camera, Video, Users, Eye, Database, 
   ArrowUpRight, Clock, ShieldAlert, Sparkles 
 } from 'lucide-react';
+import { supabase } from '../../supabaseClient';
 
 export default function AdminDashboard() {
   const { events, employees, settings, activityLogs } = useContext(AppContext);
@@ -104,7 +105,9 @@ export default function AdminDashboard() {
         </div>
         <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <Clock size={14} />
-          <span>Sync Status: Live (Firebase Sim)</span>
+          <span style={{ color: supabase ? '#10b981' : 'var(--gold-primary)' }}>
+            Sync Status: {supabase ? 'Live (Supabase Connected)' : 'Offline (Mock Sandbox)'}
+          </span>
         </div>
       </div>
 

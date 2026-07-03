@@ -470,10 +470,13 @@ export const AppProvider = ({ children }) => {
         }
         
         // Query employees table directly in real-time
-        const { data: empData, error: empError } = await supabase
-          .from('employees')
-          .select('*')
-          .or(`id.ilike."${lowerUser}",name.ilike."${lowerUser}"`);
+        let empQuery = supabase.from('employees').select('*');
+        if (lowerUser.includes(' ')) {
+          empQuery = empQuery.ilike('name', lowerUser);
+        } else {
+          empQuery = empQuery.or(`id.ilike.${lowerUser},name.ilike.${lowerUser}`);
+        }
+        const { data: empData, error: empError } = await empQuery;
           
         if (empData && empData.length > 0) {
           const dbEmp = empData[0];

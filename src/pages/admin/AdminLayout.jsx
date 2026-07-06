@@ -29,7 +29,7 @@ export default function AdminLayout() {
     <div style={{
       width: '100%',
       minHeight: '90vh',
-      backgroundColor: '#050505',
+      background: 'transparent',
       color: '#fff',
       padding: '2rem 1.5rem 5rem'
     }}>

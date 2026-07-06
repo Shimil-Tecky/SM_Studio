@@ -13,7 +13,7 @@ export default function Portfolio() {
     <div style={{
       flex: 1,
       width: '100%',
-      backgroundColor: 'var(--bg-deep)',
+      background: 'transparent',
       backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.05) 0%, transparent 60%)',
       padding: canEdit ? '0rem 2rem 8rem' : '6rem 2rem 8rem'
     }}>

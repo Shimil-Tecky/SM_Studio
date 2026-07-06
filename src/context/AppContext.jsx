@@ -107,7 +107,8 @@ export const AppProvider = ({ children }) => {
     autoBackup: true,
     qrStyle: "Classic Gold (Branded)",
     aiQuality: "Ultra HDR (32-bit)",
-    autoEditRules: "Auto-Color & Light Skin Soften"
+    autoEditRules: "Auto-Color & Light Skin Soften",
+    backgroundImage: "/hero_background.png"
   });
   const [adminAccounts, setAdminAccounts] = useState(INITIAL_ADMIN_ACCOUNTS);
   const [notifications, setNotifications] = useState([]);

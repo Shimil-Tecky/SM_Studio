@@ -48,7 +48,7 @@ export default function Home() {
   return (
     <div style={{ 
       width: '100%',
-      backgroundColor: 'var(--bg-deep)',
+      background: 'transparent',
       backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.05) 0%, transparent 60%)',
       position: 'relative'
     }}>

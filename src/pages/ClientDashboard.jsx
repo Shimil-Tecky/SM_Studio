@@ -155,7 +155,7 @@ export default function ClientDashboard() {
   };
 
   return (
-    <div style={{ width: '100%', minHeight: '90vh', backgroundColor: '#050505', color: '#fff', paddingBottom: '5rem' }}>
+    <div style={{ width: '100%', minHeight: '90vh', background: 'transparent', color: '#fff', paddingBottom: '5rem' }}>
       
       {/* 1. HERO BANNER INFO */}
       <section style={{

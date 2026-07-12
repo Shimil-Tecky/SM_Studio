@@ -40,7 +40,7 @@ export default function AdminLogin() {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '4rem 1rem',
+      padding: '6.5rem 1rem 4rem',
       position: 'relative',
       overflow: 'hidden'
     }}>
@@ -60,7 +60,6 @@ export default function AdminLogin() {
         maxWidth: '460px',
         width: '100%',
         padding: '3rem 2.5rem',
-        backgroundColor: 'rgba(10, 10, 10, 0.85)',
         zIndex: 2,
         position: 'relative'
       }}>
@@ -91,7 +90,7 @@ export default function AdminLogin() {
           }}>
             Studio Console
           </span>
-          <h2 className="font-serif" style={{ fontSize: '1.8rem', color: '#fff' }}>Admin Access</h2>
+          <h2 className="font-serif" style={{ fontSize: '1.8rem', color: 'var(--text-primary)' }}>Admin Access</h2>
           <div style={{ width: '30px', height: '1.5px', backgroundColor: 'var(--gold-primary)', margin: '0.75rem auto 0' }}></div>
         </div>
 

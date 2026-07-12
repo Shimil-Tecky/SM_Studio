@@ -688,7 +688,7 @@ export default function ContentManagement() {
                   <label className="form-label">Studio Reservations Phone Number</label>
                   <input 
                     type="text" 
-                    value={formData.contact.phone}
+                    value={formData.contact.phone || ''}
                     onChange={(e) => handleInputChange('contact', 'phone', e.target.value)}
                     className="form-control"
                   />
@@ -697,11 +697,68 @@ export default function ContentManagement() {
                   <label className="form-label">Studio Reservations Email Address</label>
                   <input 
                     type="email" 
-                    value={formData.contact.email}
+                    value={formData.contact.email || ''}
                     onChange={(e) => handleInputChange('contact', 'email', e.target.value)}
                     className="form-control"
                   />
                 </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Instagram Username / Handle</label>
+                  <input 
+                    type="text" 
+                    value={formData.contact.instagram || ''}
+                    onChange={(e) => handleInputChange('contact', 'instagram', e.target.value)}
+                    className="form-control"
+                    placeholder="_shimil_m.p_"
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">WhatsApp Number (e.g. 9846032602)</label>
+                  <input 
+                    type="text" 
+                    value={formData.contact.whatsapp || ''}
+                    onChange={(e) => handleInputChange('contact', 'whatsapp', e.target.value)}
+                    className="form-control"
+                    placeholder="9846032602"
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                <div className="form-group">
+                  <label className="form-label">Vimeo Channel URL</label>
+                  <input 
+                    type="text" 
+                    value={formData.contact.vimeo || ''}
+                    onChange={(e) => handleInputChange('contact', 'vimeo', e.target.value)}
+                    className="form-control"
+                    placeholder="https://vimeo.com/..."
+                  />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Pinterest URL</label>
+                  <input 
+                    type="text" 
+                    value={formData.contact.pinterest || ''}
+                    onChange={(e) => handleInputChange('contact', 'pinterest', e.target.value)}
+                    className="form-control"
+                    placeholder="#"
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Footer Copyright / Address Text</label>
+                <input 
+                  type="text" 
+                  value={formData.contact.footerText || ''}
+                  onChange={(e) => handleInputChange('contact', 'footerText', e.target.value)}
+                  className="form-control"
+                  placeholder="Fifth Avenue, New York, NY • © 2026. All luxury rights reserved."
+                />
               </div>
             </div>
           )}

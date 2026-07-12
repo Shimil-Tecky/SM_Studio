@@ -15,9 +15,9 @@ export default function Events() {
     <div style={{
       flex: 1,
       width: '100%',
-      background: 'transparent',
+      backgroundColor: 'var(--bg-deep)',
       backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.05) 0%, transparent 60%)',
-      padding: '6rem 2rem 8rem'
+      padding: '7.5rem 2rem 8rem'
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }} className="animate-fade-in">
         {/* Header */}
@@ -33,7 +33,7 @@ export default function Events() {
           }}>
             Live Event Registry
           </span>
-          <h1 className="font-serif" style={{ fontSize: '3rem', color: '#fff', fontWeight: '600' }}>
+          <h1 className="font-serif" style={{ fontSize: '3rem', color: 'var(--text-primary)', fontWeight: '600' }}>
             Active & Upcoming Events
           </h1>
           <div style={{ width: '60px', height: '2px', backgroundColor: 'var(--gold-primary)', margin: '1.5rem auto 0' }}></div>
@@ -64,14 +64,13 @@ export default function Events() {
                   className="glass-panel" 
                   style={{
                     padding: '2rem',
-                    backgroundColor: 'rgba(13, 13, 13, 0.45)',
-                    border: isActive ? '1px solid var(--gold-primary)' : '1px solid rgba(255, 255, 255, 0.08)',
+                    border: isActive ? '1px solid var(--gold-primary)' : '1px solid var(--border-color)',
                     borderRadius: 'var(--radius-lg)',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
                     gap: '1.5rem',
-                    boxShadow: isActive ? 'var(--gold-glow)' : '0 10px 30px rgba(0,0,0,0.35)',
+                    boxShadow: isActive ? 'var(--gold-glow)' : '0 10px 30px rgba(0,0,0,0.15)',
                     position: 'relative',
                     overflow: 'hidden'
                   }}
@@ -96,7 +95,7 @@ export default function Events() {
 
                   <div>
                     {/* Event Name */}
-                    <h3 className="font-serif" style={{ fontSize: '1.5rem', color: '#fff', paddingRight: '4.5rem', marginBottom: '0.5rem', fontWeight: '600' }}>
+                    <h3 className="font-serif" style={{ fontSize: '1.5rem', color: 'var(--text-primary)', paddingRight: '4.5rem', marginBottom: '0.5rem', fontWeight: '600' }}>
                       {evt.name}
                     </h3>
                     
@@ -118,16 +117,15 @@ export default function Events() {
                     </div>
                   </div>
 
-                  {/* QR Code Section */}
                   <div style={{
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backgroundColor: 'rgba(255,255,255,0.02)',
+                    backgroundColor: 'var(--nav-bg)',
                     padding: '1.5rem',
                     borderRadius: 'var(--radius-md)',
-                    border: '1px dashed rgba(212, 175, 55, 0.15)',
+                    border: '1px dashed var(--border-color)',
                     textAlign: 'center'
                   }}>
                     <div style={{ 
@@ -138,7 +136,7 @@ export default function Events() {
                       marginBottom: '0.75rem'
                     }}>
                       <img 
-                        src={evt.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + '/client-login?qr=' + evt.id)}`} 
+                        src={evt.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + '/client-dashboard?id=' + evt.id + '&qr=true')}`} 
                         alt="Event QR Code" 
                         style={{ width: '130px', height: '130px', display: 'block' }} 
                       />
@@ -168,8 +166,8 @@ export default function Events() {
                           fontSize: '0.85rem',
                           textAlign: 'center',
                           borderRadius: 'var(--radius-md)',
-                          border: '1px solid rgba(255, 255, 255, 0.05)',
-                          backgroundColor: 'rgba(255,255,255,0.01)',
+                          border: '1px solid var(--border-color)',
+                          backgroundColor: 'var(--nav-bg)',
                           color: 'var(--text-muted)',
                           fontWeight: '600',
                           textTransform: 'uppercase',
@@ -186,9 +184,9 @@ export default function Events() {
             })}
           </div>
         ) : (
-          <div className="glass-panel" style={{ padding: '4rem 2rem', textAlign: 'center', backgroundColor: 'rgba(13,13,13,0.3)' }}>
+          <div className="glass-panel" style={{ padding: '4rem 2rem', textAlign: 'center' }}>
             <Calendar size={48} color="var(--gold-secondary)" style={{ marginBottom: '1.5rem' }} />
-            <h3 className="font-serif" style={{ fontSize: '1.5rem', color: '#fff', marginBottom: '0.5rem' }}>No Active or Upcoming Events</h3>
+            <h3 className="font-serif" style={{ fontSize: '1.5rem', color: 'var(--text-primary)', marginBottom: '0.5rem' }}>No Active or Upcoming Events</h3>
             <p style={{ color: 'var(--text-secondary)', maxWidth: '500px', margin: '0 auto' }}>
               Check back soon for live luxury weddings and ceremonies scheduled at the studio.
             </p>

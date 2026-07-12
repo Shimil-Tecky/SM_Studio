@@ -1,6 +1,6 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { AppProvider, AppContext } from './context/AppContext';
+import { AppProvider } from './context/AppContext';
 import Navbar from './components/Navbar';
 import NotificationCenter from './components/NotificationCenter';
 
@@ -23,44 +23,10 @@ import Settings from './pages/admin/Settings';
 import ContentManagement from './pages/admin/ContentManagement';
 import PortfolioManagement from './pages/admin/PortfolioManagement';
 
-function GlobalBackground() {
-  const { settings } = useContext(AppContext);
-  const bgImg = settings?.backgroundImage || '/hero_background.png';
-  return (
-    <>
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: -2,
-        backgroundImage: `url(${bgImg})`,
-        backgroundAttachment: 'fixed',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        pointerEvents: 'none'
-      }}></div>
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: -1,
-        background: 'rgba(5, 5, 5, 0.85)', // rich glass black mask overlay
-        pointerEvents: 'none'
-      }}></div>
-    </>
-  );
-}
-
 export default function App() {
   return (
     <AppProvider>
       <BrowserRouter>
-        <GlobalBackground />
         {/* Global Floating Notification center */}
         <NotificationCenter />
         

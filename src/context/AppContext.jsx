@@ -3,7 +3,25 @@ import { supabase } from '../supabaseClient';
 
 export const AppContext = createContext();
 
-const INITIAL_EVENTS = [];
+const INITIAL_EVENTS = [
+  {
+    id: "EVE01",
+    name: "Isabella & Alexander Wedding",
+    date: "2026-07-06",
+    location: "Plaza Hotel, New York",
+    password: "plaza",
+    status: "Active",
+    coverImage: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800",
+    photos: [
+      { id: "p1", url: "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=600", category: "Ceremony", tags: ["ceremony", "bride", "groom"], timestamp: "2026-07-06 10:15" },
+      { id: "p2", url: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&q=80&w=600", category: "Portrait", tags: ["portrait", "bride"], timestamp: "2026-07-06 10:30" },
+      { id: "p3", url: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80&w=600", category: "Ceremony", tags: ["ceremony", "couple"], timestamp: "2026-07-06 10:45" }
+    ],
+    videos: [
+      { id: "v1", title: "Cinematic Vows Teaser", url: "https://assets.mixkit.co/videos/preview/mixkit-hands-of-groom-putting-wedding-ring-on-bride-41618-large.mp4", duration: "1:15" }
+    ]
+  }
+];
 
 const INITIAL_EMPLOYEES = [
   { id: "EMP01", name: "Marcus Sterling", role: "Photographer", phone: "+1 (555) 234-5678", email: "marcus@antigravity.studio", salary: "$4,500/mo", joined: "2024-03-12", attendance: true, tasks: "Royal Wedding Ceremony Shoot" },
@@ -72,8 +90,13 @@ const INITIAL_CMS_CONTENT = {
     tagline: "Reservations",
     heading: "Begin Your Journey",
     desc: "Reserve our luxury photography team for your upcoming wedding, baptism, gala, or birthday. Let us bring real-time magic to your celebration.",
-    phone: "+1 (555) 019-2831",
-    email: "reservations@antigravity.studio"
+    phone: "+91 9846032602",
+    email: "reservations@antigravity.studio",
+    instagram: "_shimil_m.p_",
+    vimeo: "https://vimeo.com/user260728000?fl=pp&fe=sh",
+    whatsapp: "9846032602",
+    pinterest: "#",
+    footerText: "Fifth Avenue, New York, NY • © 2026. All luxury rights reserved."
   }
 };
 
@@ -89,8 +112,43 @@ const INITIAL_ADMIN_ACCOUNTS = {
 };
 
 export const AppProvider = ({ children }) => {
+  // Theme State & System Listener
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('antigravity_theme') || 'system';
+  });
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const applyTheme = () => {
+      const activeTheme = theme === 'system' 
+        ? (mediaQuery.matches ? 'dark' : 'light') 
+        : theme;
+      
+      if (activeTheme === 'dark') {
+        root.classList.remove('light-theme');
+        root.classList.add('dark-theme');
+        root.style.colorScheme = 'dark';
+      } else {
+        root.classList.remove('dark-theme');
+        root.classList.add('light-theme');
+        root.style.colorScheme = 'light';
+      }
+    };
+
+    applyTheme();
+    localStorage.setItem('antigravity_theme', theme);
+
+    if (theme === 'system') {
+      const listener = () => applyTheme();
+      mediaQuery.addEventListener('change', listener);
+      return () => mediaQuery.removeEventListener('change', listener);
+    }
+  }, [theme]);
+
   // Local state fallbacks (synced with localStorage when Supabase is not connected)
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState(INITIAL_EVENTS);
   const [employees, setEmployees] = useState([]);
   const [user, setUser] = useState(null);
   const [cmsContent, setCmsContent] = useState(INITIAL_CMS_CONTENT);
@@ -107,8 +165,7 @@ export const AppProvider = ({ children }) => {
     autoBackup: true,
     qrStyle: "Classic Gold (Branded)",
     aiQuality: "Ultra HDR (32-bit)",
-    autoEditRules: "Auto-Color & Light Skin Soften",
-    backgroundImage: "/hero_background.png"
+    autoEditRules: "Auto-Color & Light Skin Soften"
   });
   const [adminAccounts, setAdminAccounts] = useState(INITIAL_ADMIN_ACCOUNTS);
   const [notifications, setNotifications] = useState([]);
@@ -214,7 +271,16 @@ export const AppProvider = ({ children }) => {
 
     function loadLocalFallback() {
       const savedEvents = localStorage.getItem('antigravity_events');
-      if (savedEvents) setEvents(JSON.parse(savedEvents));
+      if (savedEvents) {
+        const parsed = JSON.parse(savedEvents);
+        if (parsed && parsed.length > 0) {
+          setEvents(parsed);
+        } else {
+          setEvents(INITIAL_EVENTS);
+        }
+      } else {
+        setEvents(INITIAL_EVENTS);
+      }
 
       const savedEmployees = localStorage.getItem('antigravity_employees');
       if (savedEmployees) setEmployees(JSON.parse(savedEmployees));
@@ -253,39 +319,71 @@ export const AppProvider = ({ children }) => {
 
   // Write changes locally as backup
   useEffect(() => {
-    if (events.length > 0) localStorage.setItem('antigravity_events', JSON.stringify(events));
+    try {
+      if (events.length > 0) localStorage.setItem('antigravity_events', JSON.stringify(events));
+    } catch (e) {
+      console.warn("Storage quota exceeded or disabled: failed to save events", e);
+    }
   }, [events]);
 
   useEffect(() => {
-    if (employees.length > 0) localStorage.setItem('antigravity_employees', JSON.stringify(employees));
+    try {
+      if (employees.length > 0) localStorage.setItem('antigravity_employees', JSON.stringify(employees));
+    } catch (e) {
+      console.warn("Storage quota exceeded or disabled: failed to save employees", e);
+    }
   }, [employees]);
 
   useEffect(() => {
-    if (user) {
-      sessionStorage.setItem('antigravity_current_user', JSON.stringify(user));
-    } else {
-      sessionStorage.removeItem('antigravity_current_user');
+    try {
+      if (user) {
+        sessionStorage.setItem('antigravity_current_user', JSON.stringify(user));
+      } else {
+        sessionStorage.removeItem('antigravity_current_user');
+      }
+    } catch (e) {
+      console.warn("Storage error: failed to save current user", e);
     }
   }, [user]);
 
   useEffect(() => {
-    localStorage.setItem('antigravity_cms', JSON.stringify(cmsContent));
+    try {
+      localStorage.setItem('antigravity_cms', JSON.stringify(cmsContent));
+    } catch (e) {
+      console.warn("Storage quota exceeded or disabled: failed to save cmsContent", e);
+    }
   }, [cmsContent]);
 
   useEffect(() => {
-    localStorage.setItem('antigravity_portfolio', JSON.stringify(portfolioItems));
+    try {
+      localStorage.setItem('antigravity_portfolio', JSON.stringify(portfolioItems));
+    } catch (e) {
+      console.warn("Storage quota exceeded or disabled: failed to save portfolioItems", e);
+    }
   }, [portfolioItems]);
 
   useEffect(() => {
-    localStorage.setItem('antigravity_logs', JSON.stringify(activityLogs));
+    try {
+      localStorage.setItem('antigravity_logs', JSON.stringify(activityLogs));
+    } catch (e) {
+      console.warn("Storage quota exceeded or disabled: failed to save activityLogs", e);
+    }
   }, [activityLogs]);
 
   useEffect(() => {
-    localStorage.setItem('antigravity_settings', JSON.stringify(settings));
+    try {
+      localStorage.setItem('antigravity_settings', JSON.stringify(settings));
+    } catch (e) {
+      console.warn("Storage quota exceeded or disabled: failed to save settings", e);
+    }
   }, [settings]);
 
   useEffect(() => {
-    localStorage.setItem('antigravity_admin_accounts', JSON.stringify(adminAccounts));
+    try {
+      localStorage.setItem('antigravity_admin_accounts', JSON.stringify(adminAccounts));
+    } catch (e) {
+      console.warn("Storage quota exceeded or disabled: failed to save adminAccounts", e);
+    }
   }, [adminAccounts]);
 
   // Push notification helper
@@ -388,20 +486,118 @@ export const AppProvider = ({ children }) => {
     return () => clearInterval(activeInterval);
   }, []);
 
+  // Supabase Real-time Media Synchronizer
+  useEffect(() => {
+    if (!supabase) return;
+
+    const mediaChannel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'event_media'
+        },
+        (payload) => {
+          console.log('Real-time event_media insert received:', payload.new);
+          const item = payload.new;
+          
+          setEvents(prev => prev.map(evt => {
+            if (evt.id === item.event_id) {
+              if (item.type === 'photo') {
+                if (evt.photos.some(p => p.id === item.id)) return evt;
+                
+                const newPhoto = {
+                  id: item.id,
+                  url: item.url,
+                  category: item.category || 'All',
+                  likes: item.likes || 0,
+                  likedByUser: false,
+                  tags: item.tags || [],
+                  timestamp: item.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
+
+                addNotification(
+                  "New Photo Uploaded!",
+                  `A new photo was shared live in the "${evt.name}" gallery.`,
+                  "success"
+                );
+                
+                return {
+                  ...evt,
+                  photos: [newPhoto, ...evt.photos]
+                };
+              } else if (item.type === 'video') {
+                if (evt.videos.some(v => v.id === item.id)) return evt;
+
+                const newVideo = {
+                  id: item.id,
+                  title: item.title || 'Live Video Capture',
+                  url: item.url,
+                  duration: item.duration || '0:15',
+                  timestamp: item.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                };
+
+                addNotification(
+                  "New Video Shared!",
+                  `A new video clip was added live to "${evt.name}".`,
+                  "success"
+                );
+
+                return {
+                  ...evt,
+                  videos: [newVideo, ...evt.videos]
+                };
+              }
+            }
+            return evt;
+          }));
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'event_media'
+        },
+        (payload) => {
+          console.log('Real-time event_media delete received:', payload.old);
+          const deletedId = payload.old.id;
+          setEvents(prev => prev.map(evt => ({
+            ...evt,
+            photos: evt.photos.filter(p => p.id !== deletedId),
+            videos: evt.videos.filter(v => v.id !== deletedId)
+          })));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(mediaChannel);
+    };
+  }, [supabase]);
+
+  // Client Auth
   // Client Auth
   const loginClient = async (eventId, password) => {
+    const cleanId = (eventId || '').trim();
+    const cleanPassword = (password || '').trim();
+
     if (supabase) {
       try {
         const { data: eventData, error } = await supabase
           .from('events')
           .select('*')
-          .eq('id', eventId)
-          .eq('password', password);
+          .ilike('id', cleanId)
+          .eq('password', cleanPassword);
           
         if (eventData && eventData.length > 0) {
           const dbEvent = eventData[0];
           const clientUser = {
             role: 'client',
+            isGuest: false,
             eventId: dbEvent.id,
             eventName: dbEvent.name,
             clientName: dbEvent.client_name,
@@ -419,10 +615,11 @@ export const AppProvider = ({ children }) => {
       }
     }
 
-    const foundEvent = events.find(e => e.id === eventId);
-    if (foundEvent && foundEvent.password === password) {
+    const foundEvent = events.find(e => e.id.toLowerCase() === cleanId.toLowerCase());
+    if (foundEvent && foundEvent.password.toLowerCase() === cleanPassword.toLowerCase()) {
       const clientUser = {
         role: 'client',
+        isGuest: false,
         eventId: foundEvent.id,
         eventName: foundEvent.name,
         clientName: foundEvent.clientName,
@@ -434,6 +631,93 @@ export const AppProvider = ({ children }) => {
     }
     return { success: false, message: "Invalid credentials or Event ID." };
   };
+
+  // Client Auth via QR (No Password required)
+  const loginClientViaQr = async (eventId) => {
+    const cleanId = (eventId || '').trim();
+
+    if (supabase) {
+      try {
+        const { data: eventData, error } = await supabase
+          .from('events')
+          .select('*')
+          .ilike('id', cleanId);
+          
+        if (eventData && eventData.length > 0) {
+          const dbEvent = eventData[0];
+          const clientUser = {
+            role: 'client',
+            isGuest: true,
+            eventId: dbEvent.id,
+            eventName: dbEvent.name,
+            clientName: dbEvent.client_name,
+            email: dbEvent.email
+          };
+          setUser(clientUser);
+          addNotification("Welcome Back", `Successfully accessed the gallery for ${dbEvent.name}`, "info");
+          return { success: true, user: clientUser };
+        }
+      } catch (err) {
+        console.error("Direct Supabase QR login failed, falling back to state:", err);
+      }
+    }
+
+    const foundEvent = events.find(e => e.id.toLowerCase() === cleanId.toLowerCase());
+    if (foundEvent) {
+      const clientUser = {
+        role: 'client',
+        isGuest: true,
+        eventId: foundEvent.id,
+        eventName: foundEvent.name,
+        clientName: foundEvent.clientName,
+        email: foundEvent.email
+      };
+      setUser(clientUser);
+      addNotification("Welcome Back", `Successfully accessed the gallery for ${foundEvent.name}`, "info");
+      return { success: true, user: clientUser };
+    }
+    return { success: false, message: "Invalid Event ID." };
+  };
+
+  // Register and persist guest credentials
+  const registerGuest = async (guestData) => {
+    const newGuest = {
+      name: guestData.name || 'Anonymous Guest',
+      email: guestData.email || null,
+      phone_number: guestData.phoneNumber || null,
+      auth_provider: guestData.authProvider || 'Google'
+    };
+
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('guests')
+          .insert([newGuest])
+          .select();
+          
+        if (error) {
+          console.warn("Could not write guest to database (SQL table may not be created yet):", error.message);
+        } else {
+          console.log("Guest successfully registered in Supabase:", data);
+        }
+      } catch (err) {
+        console.error("Direct Supabase guest registration exception:", err);
+      }
+    }
+
+    // Fallback/Local persistence for robust offline/sandbox operation
+    const storedGuests = JSON.parse(localStorage.getItem('antigravity_guests') || '[]');
+    storedGuests.push({
+      ...newGuest,
+      id: `GST-${Math.floor(1000 + Math.random() * 9000)}`,
+      created_at: new Date().toISOString()
+    });
+    localStorage.setItem('antigravity_guests', JSON.stringify(storedGuests));
+
+    return newGuest;
+  };
+
+
 
   // Admin Auth
   const loginAdmin = async (username, password, role) => {
@@ -689,7 +973,7 @@ export const AppProvider = ({ children }) => {
       date: eventData.date,
       venue: eventData.venue || '',
       coverImage: eventData.coverImage || "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80&w=800",
-      qrCodeUrl: "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(window.location.origin + "/client-login?qr=" + eventId),
+      qrCodeUrl: "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(window.location.origin + "/client-dashboard?id=" + eventId + "&qr=true"),
       photographer: eventData.photographer || "Unassigned",
       activeClients: 0,
       status: eventData.status || "Upcoming",
@@ -718,6 +1002,21 @@ export const AppProvider = ({ children }) => {
           status: newEvent.status
         }]);
         if (error) throw error;
+
+        // Auto-provision the shared storage bucket for event media.
+        // This runs after every new event creation; it's a no-op if the
+        // bucket already exists, so it's safe to call repeatedly.
+        try {
+          const { data: buckets } = await supabase.storage.listBuckets();
+          const bucketExists = (buckets || []).some(b => b.name === 'event-media');
+          if (!bucketExists) {
+            await supabase.storage.createBucket('event-media', { public: true });
+          }
+        } catch (bucketErr) {
+          // Anon key may lack storage-admin rights; the upload step will
+          // surface the real error if the bucket is truly missing.
+          console.warn("Could not auto-create storage bucket:", bucketErr);
+        }
       } catch (err) {
         console.error("Failed to insert event to Supabase:", err);
       }
@@ -1147,6 +1446,8 @@ export const AppProvider = ({ children }) => {
       settings,
       notifications,
       loginClient,
+      loginClientViaQr,
+      registerGuest,
       loginAdmin,
       logout,
       addEvent,
@@ -1173,7 +1474,9 @@ export const AppProvider = ({ children }) => {
       deletePortfolioItem,
       reorderPortfolioItems,
       addActivityLog,
-      updateUserProfile
+      updateUserProfile,
+      theme,
+      setTheme
     }}>
       {children}
     </AppContext.Provider>

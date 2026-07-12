@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useContext, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import { 
   Camera, Calendar, MapPin, User, Heart, Download, Share2, 
@@ -8,8 +8,9 @@ import {
 } from 'lucide-react';
 
 export default function ClientDashboard() {
-  const { user, events, toggleLikePhoto, addNotification } = useContext(AppContext);
+  const { user, loginClientViaQr, events, toggleLikePhoto, addNotification } = useContext(AppContext);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [activeTab, setActiveTab] = useState('photos'); // photos, videos, favorites, downloadCenter
   const [filter, setFilter] = useState('All');
@@ -21,15 +22,78 @@ export default function ClientDashboard() {
   const [shareModalData, setShareModalData] = useState(null);
   const [bulkDownloading, setBulkDownloading] = useState(false);
 
-  // Redirect if not logged in as client
+  const [authLoading, setAuthLoading] = useState(true);
+  const loginAttempted = useRef(false);
+
+  // Redirect if not logged in as client, but bypass login with auto-login for guests/users with event ID
   useEffect(() => {
-    if (!user || user.role !== 'client') {
-      navigate('/client-login', { replace: true });
-    }
-  }, [user, navigate]);
+    let active = true;
+    const checkAuth = async () => {
+      const eventIdParam = searchParams.get('id');
+      if (eventIdParam) {
+        // If already logged in as client for this specific event, we are good
+        if (user && user.role === 'client' && user.eventId.toLowerCase() === eventIdParam.toLowerCase()) {
+          if (active) setAuthLoading(false);
+          return;
+        }
+
+        if (loginAttempted.current) return;
+        loginAttempted.current = true;
+
+        // Try automatic login (direct from Supabase or memory state)
+        const res = await loginClientViaQr(eventIdParam);
+        if (active) {
+          if (res && res.success) {
+            setAuthLoading(false);
+          } else {
+            // Failed to find the event or login, redirect to login page
+            navigate('/client-login', { replace: true });
+          }
+        }
+      } else {
+        // No event ID specified, must be logged in as a client
+        if (user && user.role === 'client') {
+          if (active) setAuthLoading(false);
+        } else {
+          if (active) navigate('/client-login', { replace: true });
+        }
+      }
+    };
+
+    checkAuth();
+    return () => {
+      active = false;
+    };
+  }, [user, navigate, searchParams, loginClientViaQr]);
 
   // Find the event for the logged-in client
-  const event = events.find(e => e.id === user?.eventId);
+  const event = events.find(e => e.id.toLowerCase() === user?.eventId?.toLowerCase());
+
+  if (authLoading) {
+    return (
+      <div style={{
+        minHeight: '80vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: 'var(--bg-deep)',
+        color: 'var(--text-primary)',
+        gap: '1.5rem',
+        padding: '2rem'
+      }}>
+        <div className="spinner" style={{
+          width: '50px',
+          height: '50px',
+          borderRadius: '50%',
+          border: '3px solid rgba(212, 175, 55, 0.1)',
+          borderTopColor: 'var(--gold-primary)',
+          animation: 'spin 1s linear infinite'
+        }} />
+        <h3 className="font-serif" style={{ letterSpacing: '1px' }}>Synchronizing Live Gallery...</h3>
+      </div>
+    );
+  }
 
   if (!event) {
     return (
@@ -155,14 +219,14 @@ export default function ClientDashboard() {
   };
 
   return (
-    <div style={{ width: '100%', minHeight: '90vh', background: 'transparent', color: '#fff', paddingBottom: '5rem' }}>
+    <div style={{ width: '100%', minHeight: '90vh', backgroundColor: 'var(--bg-deep)', color: 'var(--text-primary)', paddingBottom: '5rem' }}>
       
       {/* 1. HERO BANNER INFO */}
       <section style={{
         position: 'relative',
-        padding: '4rem 2rem 3rem',
+        padding: '6.5rem 2rem 3rem',
         borderBottom: '1px solid var(--border-color)',
-        backgroundImage: `linear-gradient(to bottom, rgba(5,5,5,0.7), #050505), url(${event.coverImage})`,
+        backgroundImage: `var(--hero-overlay), url(${event.coverImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center'
       }}>
@@ -174,7 +238,12 @@ export default function ClientDashboard() {
                 {event.status === 'Active' ? 'LIVE EVENT STREAMING' : 'ARCHIVED EVENT'}
               </span>
             </div>
-            <h1 className="font-serif" style={{ fontSize: '2.5rem', marginBottom: '0.75rem', color: '#fff', textAlign: 'left' }}>{event.name}</h1>
+            <h1 className="font-serif" style={{ fontSize: '2.5rem', marginBottom: '0.75rem', color: 'var(--text-primary)', textAlign: 'left' }}>{event.name}</h1>
+            {event.clientName && (
+              <div style={{ fontSize: '0.85rem', fontWeight: '700', letterSpacing: '2px', color: 'var(--gold-primary)', textTransform: 'uppercase', marginBottom: '1rem' }}>
+                Client: {event.clientName}
+              </div>
+            )}
             
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
               <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><Calendar size={16} />{event.date}</span>
@@ -184,17 +253,17 @@ export default function ClientDashboard() {
           </div>
 
           {/* Real-time stats */}
-          <div className="glass-panel" style={{ display: 'flex', gap: '1.5rem', padding: '1.2rem 2rem', backgroundColor: 'rgba(13,13,13,0.5)', width: 'fit-content' }}>
+          <div className="glass-panel" style={{ display: 'flex', gap: '1.5rem', padding: '1.2rem 2rem', width: 'fit-content' }}>
             <div style={{ textAlign: 'center' }}>
               <h4 style={{ color: 'var(--gold-primary)', fontSize: '1.5rem', fontWeight: '700' }}>{event.photos?.length || 0}</h4>
               <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Photos</span>
             </div>
-            <div style={{ width: '1px', backgroundColor: 'rgba(255,255,255,0.08)' }}></div>
+            <div style={{ width: '1px', backgroundColor: 'var(--border-color)' }}></div>
             <div style={{ textAlign: 'center' }}>
               <h4 style={{ color: 'var(--gold-primary)', fontSize: '1.5rem', fontWeight: '700' }}>{event.videos?.length || 0}</h4>
               <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Videos</span>
             </div>
-            <div style={{ width: '1px', backgroundColor: 'rgba(255,255,255,0.08)' }}></div>
+            <div style={{ width: '1px', backgroundColor: 'var(--border-color)' }}></div>
             <div style={{ textAlign: 'center' }}>
               <h4 style={{ color: 'var(--gold-primary)', fontSize: '1.5rem', fontWeight: '700' }}>{event.activeClients}</h4>
               <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Guests</span>
@@ -251,70 +320,76 @@ export default function ClientDashboard() {
               <span>Live Videos</span>
             </button>
 
-            <button 
-              onClick={() => setActiveTab('favorites')}
-              className={`btn`}
-              style={{
-                background: 'none',
-                border: 'none',
-                borderBottom: activeTab === 'favorites' ? '3px solid var(--gold-primary)' : '3px solid transparent',
-                color: activeTab === 'favorites' ? '#fff' : 'var(--text-secondary)',
-                borderRadius: '0',
-                paddingBottom: '1rem',
-                fontSize: '0.95rem',
-                textTransform: 'uppercase',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                cursor: 'pointer'
-              }}
-            >
-              <Heart size={16} />
-              <span>Favorites ({favoritePhotos.length})</span>
-            </button>
+            {!user?.isGuest && (
+              <>
+                <button 
+                  onClick={() => setActiveTab('favorites')}
+                  className={`btn`}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    borderBottom: activeTab === 'favorites' ? '3px solid var(--gold-primary)' : '3px solid transparent',
+                    color: activeTab === 'favorites' ? '#fff' : 'var(--text-secondary)',
+                    borderRadius: '0',
+                    paddingBottom: '1rem',
+                    fontSize: '0.95rem',
+                    textTransform: 'uppercase',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <Heart size={16} />
+                  <span>Favorites ({favoritePhotos.length})</span>
+                </button>
 
-            <button 
-              onClick={() => setActiveTab('downloadCenter')}
-              className={`btn`}
-              style={{
-                background: 'none',
-                border: 'none',
-                borderBottom: activeTab === 'downloadCenter' ? '3px solid var(--gold-primary)' : '3px solid transparent',
-                color: activeTab === 'downloadCenter' ? '#fff' : 'var(--text-secondary)',
-                borderRadius: '0',
-                paddingBottom: '1rem',
-                fontSize: '0.95rem',
-                textTransform: 'uppercase',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                cursor: 'pointer'
-              }}
-            >
-              <FolderDown size={16} />
-              <span>Download Center</span>
-            </button>
+                <button 
+                  onClick={() => setActiveTab('downloadCenter')}
+                  className={`btn`}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    borderBottom: activeTab === 'downloadCenter' ? '3px solid var(--gold-primary)' : '3px solid transparent',
+                    color: activeTab === 'downloadCenter' ? '#fff' : 'var(--text-secondary)',
+                    borderRadius: '0',
+                    paddingBottom: '1rem',
+                    fontSize: '0.95rem',
+                    textTransform: 'uppercase',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    cursor: 'pointer'
+                  }}
+                >
+                  <FolderDown size={16} />
+                  <span>Download Center</span>
+                </button>
+              </>
+            )}
           </div>
 
           {/* Quick settings controls */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-              <input 
-                type="checkbox" 
-                checked={watermarkEnabled}
-                onChange={() => setWatermarkEnabled(!watermarkEnabled)}
-                style={{ accentColor: 'var(--gold-primary)' }}
-              />
-              <span>Watermark Previews</span>
-            </label>
-
-            {event.status === 'Active' && (
+          {!user?.isGuest && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1rem' }}>
               <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                <RefreshCw size={12} className={autoRefresh ? "animate-pulse-gold" : ""} />
-                <span>Auto-Refresh Streams</span>
+                <input 
+                  type="checkbox" 
+                  checked={watermarkEnabled}
+                  onChange={() => setWatermarkEnabled(!watermarkEnabled)}
+                  style={{ accentColor: 'var(--gold-primary)' }}
+                />
+                <span>Watermark Previews</span>
               </label>
-            )}
-          </div>
+
+              {event.status === 'Active' && (
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                  <RefreshCw size={12} className={autoRefresh ? "animate-pulse-gold" : ""} />
+                  <span>Auto-Refresh Streams</span>
+                </label>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
@@ -508,7 +583,7 @@ export default function ClientDashboard() {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
                       <div>
-                        <h4 style={{ fontSize: '1rem', color: '#fff', fontWeight: '600' }}>{vid.title}</h4>
+                        <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)', fontWeight: '600' }}>{vid.title}</h4>
                         <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Uploaded: {vid.timestamp}</span>
                       </div>
                       <a 

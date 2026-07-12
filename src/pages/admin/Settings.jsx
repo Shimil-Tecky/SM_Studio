@@ -18,7 +18,6 @@ export default function Settings() {
   const [qrStyle, setQrStyle] = useState(settings.qrStyle);
   const [aiQuality, setAiQuality] = useState(settings.aiQuality);
   const [autoEditRules, setAutoEditRules] = useState(settings.autoEditRules);
-  const [backgroundImage, setBackgroundImage] = useState(settings.backgroundImage || '/hero_background.png');
 
   const handleSave = (e) => {
     e.preventDefault();
@@ -33,8 +32,7 @@ export default function Settings() {
       autoBackup,
       qrStyle,
       aiQuality,
-      autoEditRules,
-      backgroundImage
+      autoEditRules
     });
     addNotification("Settings Saved", "System configuration details updated successfully.", "success");
   };
@@ -186,37 +184,6 @@ export default function Settings() {
                 <div className="form-group">
                   <label className="form-label">Studio HQ Address</label>
                   <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} className="form-control" required />
-                </div>
-
-                <h3 style={{ fontSize: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem', color: 'var(--gold-primary)', marginTop: '1rem' }}>
-                  Global Page Theme
-                </h3>
-
-                <div className="form-group">
-                  <label className="form-label">Global Fixed Background Image URL</label>
-                  <input 
-                    type="text" 
-                    value={backgroundImage} 
-                    onChange={(e) => setBackgroundImage(e.target.value)} 
-                    placeholder="Enter image URL (e.g. /hero_background.png or an Unsplash URL)" 
-                    className="form-control" 
-                    required 
-                  />
-                  <div style={{ marginTop: '0.75rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <div style={{
-                      width: '120px',
-                      height: '70px',
-                      borderRadius: 'var(--radius-sm)',
-                      backgroundImage: `url(${backgroundImage})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      border: '1px solid var(--border-color)',
-                      backgroundColor: '#0a0a0a'
-                    }}></div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                      Fixed background preview. Accepts local assets or external HTTPS image links.
-                    </span>
-                  </div>
                 </div>
               </div>
             )}

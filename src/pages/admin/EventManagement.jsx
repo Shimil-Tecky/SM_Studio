@@ -170,18 +170,49 @@ export default function EventManagement() {
                     <span style={{ fontSize: '0.85rem' }}>{evt.venue}</span>
                   </td>
                   <td>
-                    <span style={{
-                      fontSize: '0.7rem',
-                      padding: '0.2rem 0.6rem',
-                      borderRadius: '50px',
-                      fontWeight: '600',
-                      textTransform: 'uppercase',
-                      backgroundColor: evt.status === 'Active' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255,255,255,0.05)',
-                      color: evt.status === 'Active' ? '#ef4444' : 'var(--text-secondary)',
-                      border: evt.status === 'Active' ? '1px solid #ef4444' : '1px solid rgba(255,255,255,0.1)'
-                    }}>
-                      {evt.status}
-                    </span>
+                    <select
+                      value={evt.status}
+                      onChange={(e) => {
+                        updateEvent(evt.id, { status: e.target.value });
+                        addNotification("Status Updated", `Event "${evt.name}" status set to ${e.target.value}.`, "success");
+                      }}
+                      style={{
+                        background: evt.status === 'Active' 
+                          ? 'rgba(239, 68, 68, 0.15)' 
+                          : evt.status === 'Completed' 
+                            ? 'rgba(34, 197, 94, 0.15)' 
+                            : 'rgba(212, 175, 55, 0.1)',
+                        color: evt.status === 'Active' 
+                          ? '#ef4444' 
+                          : evt.status === 'Completed' 
+                            ? '#22c55e' 
+                            : 'var(--gold-primary)',
+                        border: evt.status === 'Active' 
+                          ? '1px solid #ef4444' 
+                          : evt.status === 'Completed' 
+                            ? '1px solid #22c55e' 
+                            : '1px solid var(--border-color)',
+                        borderRadius: '50px',
+                        padding: '0.2rem 1.4rem 0.2rem 0.6rem',
+                        fontSize: '0.7rem',
+                        fontWeight: '700',
+                        textTransform: 'uppercase',
+                        cursor: 'pointer',
+                        outline: 'none',
+                        transition: 'var(--transition-smooth)',
+                        appearance: 'none',
+                        WebkitAppearance: 'none',
+                        backgroundImage: `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='${evt.status === 'Active' ? '%23ef4444' : evt.status === 'Completed' ? '%2322c55e' : '%23d4af37'}' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>")`,
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: 'right 0.45rem center',
+                        backgroundSize: '10px',
+                        textAlign: 'center'
+                      }}
+                    >
+                      <option value="Upcoming" style={{ background: '#0d0d0d', color: '#fff' }}>Upcoming</option>
+                      <option value="Active" style={{ background: '#0d0d0d', color: '#fff' }}>Active</option>
+                      <option value="Completed" style={{ background: '#0d0d0d', color: '#fff' }}>Completed</option>
+                    </select>
                   </td>
                   <td style={{ textAlign: 'center' }}>
                     <div style={{ display: 'inline-flex', gap: '0.5rem', justifyContent: 'center' }}>

@@ -3,10 +3,11 @@
    ========================================================================== */
 
 :root {
-  /* Color Palette */
+  /* Color Palette - Default Dark Mode */
   --bg-deep: #050505;
   --bg-card: #0d0d0d;
   --bg-card-hover: #141414;
+  --bg-alternate: #070707;
   --gold-primary: #d4af37;
   --gold-secondary: #aa8022;
   --gold-light: #f3e5ab;
@@ -30,6 +31,22 @@
   --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
   --glass-blur: blur(12px) saturate(180%);
 
+  /* Navigation theme colors */
+  --nav-bg: rgba(255, 255, 255, 0.03);
+  --nav-border: rgba(255, 255, 255, 0.08);
+  --nav-hover-bg: rgba(255, 255, 255, 0.08);
+  --nav-hover-border: rgba(255, 255, 255, 0.25);
+  --nav-hover-shadow: 0 4px 15px rgba(255, 255, 255, 0.08);
+  --nav-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+
+  /* Page layout elements */
+  --hero-overlay: linear-gradient(to bottom, rgba(5,5,5,0.7), #050505);
+  --mobile-menu-bg: rgba(13, 13, 13, 0.95);
+  --input-bg: rgba(255, 255, 255, 0.03);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --input-focus-bg: rgba(255, 255, 255, 0.06);
+  --video-opacity: 0.35;
+
   /* Typography */
   --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-serif: 'Playfair Display', Georgia, serif;
@@ -44,11 +61,81 @@
   --transition-fast: all 0.2s ease;
 }
 
+.light-theme {
+  --bg-deep: #fcfbf7;            /* Warm off-white / high-end gallery walls */
+  --bg-card: #ffffff;            /* Pure white for card elevation */
+  --bg-card-hover: #f5f2eb;      /* Soft light-beige hover */
+  --bg-alternate: #efede4;       /* Balanced darker light-beige for sections */
+  
+  --text-primary: #1a1a1a;       /* Charcoal black for crisp typography */
+  --text-secondary: #5c5c5c;     /* Clean neutral dark gray */
+  --text-muted: #999999;         /* Subdued text */
+  
+  --border-color: rgba(170, 128, 34, 0.2);
+  --border-color-hover: rgba(170, 128, 34, 0.35);
+  
+  /* Glassmorphism Settings (Light Mode) */
+  --glass-bg: rgba(245, 242, 235, 0.85);
+  --glass-bg-hover: rgba(255, 255, 255, 0.9);
+  --glass-border: 1px solid rgba(170, 128, 34, 0.18);
+  --glass-border-hover: 1px solid rgba(170, 128, 34, 0.35);
+  --glass-shadow: 0 8px 32px 0 rgba(170, 128, 34, 0.06);
+
+  /* Navigation theme colors (Light Mode) */
+  --nav-bg: rgba(170, 128, 34, 0.04);
+  --nav-border: rgba(170, 128, 34, 0.15);
+  --nav-hover-bg: rgba(170, 128, 34, 0.08);
+  --nav-hover-border: rgba(170, 128, 34, 0.3);
+  --nav-hover-shadow: 0 4px 15px rgba(170, 128, 34, 0.12);
+  --nav-shadow: 0 4px 12px rgba(170, 128, 34, 0.06);
+
+  /* Page layout elements (Light Mode) */
+  --hero-overlay: linear-gradient(to bottom, rgba(252, 251, 247, 0.6), #fcfbf7);
+  --mobile-menu-bg: rgba(252, 251, 247, 0.95);
+  --input-bg: rgba(170, 128, 34, 0.02);
+  --input-border: rgba(170, 128, 34, 0.15);
+  --input-focus-bg: rgba(170, 128, 34, 0.05);
+  --video-opacity: 0.12;
+}
+
+.dark-theme {
+  --bg-deep: #050505;
+  --bg-card: #0d0d0d;
+  --bg-card-hover: #141414;
+  --bg-alternate: #070707;
+  --text-primary: #ffffff;
+  --text-secondary: #a3a3a3;
+  --text-muted: #666666;
+  --border-color: rgba(212, 175, 55, 0.15);
+  --border-color-hover: rgba(212, 175, 55, 0.35);
+  --glass-bg: rgba(13, 13, 13, 0.7);
+  --glass-bg-hover: rgba(20, 20, 20, 0.85);
+  --glass-border: 1px solid rgba(212, 175, 55, 0.12);
+  --glass-border-hover: 1px solid rgba(212, 175, 55, 0.25);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --nav-bg: rgba(255, 255, 255, 0.03);
+  --nav-border: rgba(255, 255, 255, 0.08);
+  --nav-hover-bg: rgba(255, 255, 255, 0.08);
+  --nav-hover-border: rgba(255, 255, 255, 0.25);
+  --nav-hover-shadow: 0 4px 15px rgba(255, 255, 255, 0.08);
+  --nav-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  --hero-overlay: linear-gradient(to bottom, rgba(5,5,5,0.7), #050505);
+  --mobile-menu-bg: rgba(13, 13, 13, 0.95);
+  --input-bg: rgba(255, 255, 255, 0.03);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --input-focus-bg: rgba(255, 255, 255, 0.06);
+  --video-opacity: 0.35;
+}
+
 /* Base resets & styles */
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+}
+
+html {
+  overflow-x: hidden;
 }
 
 body {
@@ -129,10 +216,10 @@ a {
 }
 
 .glass-card {
-  background: rgba(13, 13, 13, 0.5);
+  background: var(--glass-bg);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: var(--glass-border);
   border-radius: var(--radius-md);
   padding: 1.5rem;
   transition: var(--transition-smooth);
@@ -140,7 +227,7 @@ a {
 
 .glass-card:hover {
   border-color: var(--gold-primary);
-  background: rgba(13, 13, 13, 0.85);
+  background: var(--glass-bg-hover);
   transform: translateY(-3px);
 }
 
@@ -212,8 +299,8 @@ a {
 
 .form-select option,
 select option {
-  background-color: #0d0d0d;
-  color: #ffffff;
+  background-color: var(--bg-card);
+  color: var(--text-primary);
 }
 
 /* Button UI */
@@ -301,6 +388,11 @@ select option {
   100% { box-shadow: 0 0 5px rgba(212, 175, 55, 0.2); }
 }
 
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.6s ease forwards;
 }
@@ -334,13 +426,13 @@ select option {
 
 .custom-table td {
   padding: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-color);
   color: var(--text-secondary);
   font-size: 0.9rem;
 }
 
 .custom-table tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-card-hover);
   color: var(--text-primary);
 }
 
@@ -437,5 +529,108 @@ select option {
   
   .glass-panel {
     border-radius: var(--radius-md);
+  }
+
+  /* ── Home Page Mobile ── */
+
+  /* Section padding */
+  .home-section {
+    padding: 4rem 1.25rem !important;
+  }
+
+  /* Services section header */
+  .home-services-header {
+    margin-bottom: 2rem !important;
+  }
+
+  /* Service cards: 1 column, center everything */
+  .home-services-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .home-service-card {
+    text-align: center !important;
+    align-items: center !important;
+  }
+
+  /* Philosophy / Studio Thoughts: stack, center text */
+  .home-philosophy-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2rem !important;
+  }
+  .home-philosophy-text {
+    text-align: center !important;
+  }
+  .home-philosophy-text .gold-divider {
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .home-philosophy-text blockquote-border {
+    border-left: none !important;
+    padding-left: 0 !important;
+    text-align: center !important;
+  }
+  .home-philosophy-quote-block {
+    border-left: none !important;
+    padding-left: 0 !important;
+    text-align: center !important;
+  }
+
+  /* QR / Scan & Relive section */
+  .home-qr-grid {
+    grid-template-columns: 1fr !important;
+    padding: 2.5rem 1.5rem !important;
+    gap: 2rem !important;
+  }
+  .home-qr-text {
+    text-align: center !important;
+  }
+  .home-qr-form {
+    flex-direction: column !important;
+  }
+  .home-qr-form input {
+    width: 100% !important;
+  }
+  .home-qr-form button {
+    width: 100% !important;
+    padding-inline: 1rem !important;
+  }
+
+  /* Testimonials */
+  .home-testimonials-grid {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .home-testimonial-card {
+    max-width: 100% !important;
+    flex: unset !important;
+  }
+
+  /* Contact section */
+  .home-contact-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2.5rem !important;
+  }
+  .home-contact-info {
+    text-align: center !important;
+  }
+  .home-contact-info .contact-item {
+    justify-content: center !important;
+  }
+
+  /* Hero glass panel */
+  .home-hero-panel {
+    padding: 2rem 1.25rem !important;
+    margin: 0 0.75rem !important;
+  }
+  .home-hero-panel h2 {
+    font-size: 2rem !important;
+  }
+
+  /* Live ticker */
+  .home-ticker {
+    flex-direction: column !important;
+    gap: 0.75rem !important;
+    text-align: center !important;
+    padding: 1rem !important;
   }
 }

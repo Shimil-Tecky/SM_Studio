@@ -13,20 +13,20 @@ export default function Portfolio() {
     <div style={{
       flex: 1,
       width: '100%',
-      background: 'transparent',
+      backgroundColor: 'var(--bg-deep)',
       backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.05) 0%, transparent 60%)',
-      padding: canEdit ? '0rem 2rem 8rem' : '6rem 2rem 8rem'
+      padding: canEdit ? '5.5rem 2rem 8rem' : '7.5rem 2rem 8rem'
     }}>
       {/* Dynamic Visual CMS Admin Bar */}
       {canEdit && (
         <div style={{
-          backgroundColor: 'rgba(10, 10, 10, 0.95)',
-          borderBottom: '1px solid rgba(212, 175, 55, 0.3)',
+          backgroundColor: 'var(--glass-bg)',
+          borderBottom: '1px solid var(--border-color)',
           padding: '0.8rem 2rem',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
           marginLeft: '-2rem',
           marginRight: '-2rem',
           width: 'calc(100% + 4rem)',
@@ -35,7 +35,7 @@ export default function Portfolio() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
             <Shield size={16} color="var(--gold-primary)" />
-            <span style={{ fontSize: '0.85rem', color: '#fff', fontWeight: '500' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--text-primary)', fontWeight: '500' }}>
               Logged in as <strong style={{ color: 'var(--gold-primary)' }}>{user.role}</strong> (Portfolio Editor Active)
             </span>
           </div>
@@ -57,7 +57,7 @@ export default function Portfolio() {
             <button 
               onClick={() => navigate('/admin')}
               className="btn btn-outline"
-              style={{ padding: '0.4rem 1rem', fontSize: '0.75rem', borderColor: 'rgba(255,255,255,0.2)', color: '#fff', textTransform: 'none', letterSpacing: 'normal' }}
+              style={{ padding: '0.4rem 1rem', fontSize: '0.75rem', borderColor: 'var(--border-color)', color: 'var(--text-primary)', textTransform: 'none', letterSpacing: 'normal' }}
             >
               Control Panel
             </button>
@@ -105,7 +105,7 @@ export default function Portfolio() {
           }}>
             Visual Masterpieces
           </span>
-          <h1 className="font-serif" style={{ fontSize: '3rem', color: '#fff', fontWeight: '600' }}>
+          <h1 className="font-serif" style={{ fontSize: '3rem', color: 'var(--text-primary)', fontWeight: '600' }}>
             Signature Showcase
           </h1>
           <div style={{ width: '60px', height: '2px', backgroundColor: 'var(--gold-primary)', margin: '1.5rem auto 0' }}></div>

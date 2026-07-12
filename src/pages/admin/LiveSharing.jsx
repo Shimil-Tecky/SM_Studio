@@ -1,7 +1,8 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { AppContext } from '../../context/AppContext';
-import { UploadCloud, Camera, Check, RefreshCw, Layers, AlertCircle, ChevronDown } from 'lucide-react';
+import { supabase } from '../../supabaseClient';
+import { UploadCloud, Check, RefreshCw, Layers, AlertCircle, ChevronDown } from 'lucide-react';
 
 export default function LiveSharing() {
   const { events, addPhotosToEvent, addVideoToEvent, addNotification } = useContext(AppContext);
@@ -47,15 +48,7 @@ export default function LiveSharing() {
 
   const activeEvent = events.find(e => e.id === selectedEventId);
 
-  // Mock list of luxury photos to pull from during simulation uploads
-  const mockStockPhotos = [
-    "https://images.unsplash.com/photo-1519225495810-7517c300ea07?auto=format&fit=crop&q=80&w=800",
-    "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&q=80&w=800",
-    "https://images.unsplash.com/photo-1535254973040-607b474cb50d?auto=format&fit=crop&q=80&w=800",
-    "https://images.unsplash.com/photo-1532712938310-34cb3982ef74?auto=format&fit=crop&q=80&w=800",
-    "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80&w=800",
-    "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?auto=format&fit=crop&q=80&w=800"
-  ];
+
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -75,7 +68,34 @@ export default function LiveSharing() {
     }
   };
 
-  const handleActualFilesUpload = (files) => {
+  const BUCKET = 'event-media';
+
+  // Try to ensure the bucket exists. Anon key may not have admin rights,
+  // so we silently continue if listing/creating fails and let the upload
+  // surface the actual error.
+  const ensureBucket = async () => {
+    try {
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const exists = (buckets || []).some(b => b.name === BUCKET);
+      if (!exists) {
+        await supabase.storage.createBucket(BUCKET, { public: true });
+      }
+    } catch (_) {
+      // If we can't check/create (no admin rights), proceed and let the
+      // upload attempt show the actual error.
+    }
+  };
+
+  const uploadFileToStorage = async (file, path) => {
+    const { data, error } = await supabase.storage
+      .from(BUCKET)
+      .upload(path, file, { upsert: true, contentType: file.type });
+    if (error) throw error;
+    const { data: publicData } = supabase.storage.from(BUCKET).getPublicUrl(data.path);
+    return publicData.publicUrl;
+  };
+
+  const handleActualFilesUpload = async (files) => {
     if (!selectedEventId) {
       addNotification("Upload Error", "Please select an event first.", "warning");
       return;
@@ -85,56 +105,94 @@ export default function LiveSharing() {
     setUploadProgress(0);
     setUploadedCount(files.length);
 
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 12;
-      if (progress >= 95) {
-        clearInterval(interval);
-      } else {
-        setUploadProgress(progress);
-      }
-    }, 100);
-
     const imageFiles = files.filter(f => f.type.startsWith('image/'));
     const videoFiles = files.filter(f => f.type.startsWith('video/'));
 
-    const imagePromises = imageFiles.map(file => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.readAsDataURL(file);
-      });
-    });
+    // Sanitize client names (Groom & Bride) for use as a folder path
+    const folderName = (activeEvent?.clientName || activeEvent?.client_name || activeEvent?.name || selectedEventId)
+      .replace(/[^a-zA-Z0-9_\-]/g, '_')
+      .toLowerCase();
 
-    const videoPromises = videoFiles.map(file => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve({ name: file.name, data: e.target.result });
-        reader.readAsDataURL(file);
-      });
-    });
+    const totalFiles = imageFiles.length + videoFiles.length;
 
-    Promise.all([Promise.all(imagePromises), Promise.all(videoPromises)])
-      .then(([images, videos]) => {
-        setUploadProgress(100);
-        
-        if (images.length > 0) {
-          addPhotosToEvent(selectedEventId, images, category);
-        }
+    try {
+      let uploadedImageUrls = [];
+      let uploadedVideos = [];
 
-        videos.forEach(video => {
-          addVideoToEvent(selectedEventId, video.name, video.data, '1:15');
+      if (supabase) {
+        // Ensure the bucket exists before uploading
+        await ensureBucket();
+
+        // ── Upload images to Supabase Storage ──
+        const imageUploadPromises = imageFiles.map(async (file, idx) => {
+          const ext = file.name.split('.').pop();
+          const path = `events/${folderName}/photos/${Date.now()}_${idx}.${ext}`;
+          const url = await uploadFileToStorage(file, path);
+          setUploadProgress(prev => Math.min(prev + Math.floor(80 / Math.max(totalFiles, 1)), 80));
+          return url;
         });
 
-        setTimeout(() => {
-          setUploading(false);
-          addNotification("Upload Complete", `Successfully uploaded ${files.length} file(s) live!`, "success");
-        }, 500);
-      })
-      .catch(err => {
-        setUploading(false);
-        addNotification("Upload Failed", "Error processing local files.", "danger");
+        // ── Upload videos to Supabase Storage ──
+        const videoUploadPromises = videoFiles.map(async (file, idx) => {
+          const ext = file.name.split('.').pop();
+          const path = `events/${folderName}/videos/${Date.now()}_${idx}.${ext}`;
+          const url = await uploadFileToStorage(file, path);
+          setUploadProgress(prev => Math.min(prev + Math.floor(80 / Math.max(totalFiles, 1)), 80));
+          return { name: file.name, url };
+        });
+
+        [uploadedImageUrls, uploadedVideos] = await Promise.all([
+          Promise.all(imageUploadPromises),
+          Promise.all(videoUploadPromises),
+        ]);
+      } else {
+        // ── Fallback: read as Data URL when Supabase is not configured ──
+        const imagePromises = imageFiles.map(file =>
+          new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve(e.target.result);
+            reader.readAsDataURL(file);
+          })
+        );
+        const videoPromises = videoFiles.map(file =>
+          new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = (e) => resolve({ name: file.name, url: e.target.result });
+            reader.readAsDataURL(file);
+          })
+        );
+        [uploadedImageUrls, uploadedVideos] = await Promise.all([
+          Promise.all(imagePromises),
+          Promise.all(videoPromises),
+        ]);
+      }
+
+      setUploadProgress(90);
+
+      if (uploadedImageUrls.length > 0) {
+        addPhotosToEvent(selectedEventId, uploadedImageUrls, category);
+      }
+      uploadedVideos.forEach(video => {
+        addVideoToEvent(selectedEventId, video.name, video.url, '1:15');
       });
+
+      setUploadProgress(100);
+      setTimeout(() => {
+        setUploading(false);
+        addNotification("Upload Complete", `Successfully uploaded ${files.length} file(s) live!`, "success");
+      }, 500);
+    } catch (err) {
+      console.error("Upload failed:", err);
+      setUploading(false);
+      const isBucketMissing = err?.message?.toLowerCase().includes('bucket') || err?.error === 'Bucket not found';
+      addNotification(
+        "Upload Failed",
+        isBucketMissing
+          ? 'Storage bucket "event-media" not found. Please create it in your Supabase dashboard → Storage → New Bucket → Name: event-media → Public: ON'
+          : (err.message || "Error uploading files to storage."),
+        "danger"
+      );
+    }
   };
 
   const handleFileSelectChange = (e) => {
@@ -148,66 +206,7 @@ export default function LiveSharing() {
     document.getElementById('media-uploader-input')?.click();
   };
 
-  const simulateBulkUpload = (count) => {
-    if (!selectedEventId) {
-      addNotification("Upload Error", "Please select an event first.", "warning");
-      return;
-    }
 
-    setUploading(true);
-    setUploadProgress(0);
-    setUploadedCount(count);
-
-    // Simulate progress counting from 0 to 100
-    const interval = setInterval(() => {
-      setUploadProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          
-          // Complete upload by adding mock photos to context
-          const urlsToUpload = [];
-          for (let i = 0; i < count; i++) {
-            const randomPhotoUrl = mockStockPhotos[Math.floor(Math.random() * mockStockPhotos.length)] + `&random=${Date.now() + i}`;
-            urlsToUpload.push(randomPhotoUrl);
-          }
-
-          if (mediaType === 'photo') {
-            addPhotosToEvent(selectedEventId, urlsToUpload, category);
-          } else {
-            const title = videoTitle.trim() || `Cinematic Teaser #${activeEvent.videos.length + 1}`;
-            const mockVideoUrl = "https://assets.mixkit.co/videos/preview/mixkit-hands-of-groom-putting-wedding-ring-on-bride-41618-large.mp4";
-            addVideoToEvent(selectedEventId, title, mockVideoUrl, videoDuration);
-          }
-
-          setUploading(false);
-          setVideoTitle('');
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 150);
-  };
-
-  const simulateCameraCapture = () => {
-    if (!selectedEventId) {
-      addNotification("Capture Error", "Please select an event first.", "warning");
-      return;
-    }
-    
-    setUploading(true);
-    setUploadProgress(0);
-    setUploadedCount(1);
-
-    setTimeout(() => {
-      setUploadProgress(50);
-      setTimeout(() => {
-        const captureUrl = "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&q=80&w=800" + `&capture=${Date.now()}`;
-        addPhotosToEvent(selectedEventId, [captureUrl], category);
-        setUploading(false);
-        setUploadProgress(100);
-      }, 500);
-    }, 400);
-  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', animation: 'fadeIn 0.5s ease' }}>
@@ -501,18 +500,9 @@ export default function LiveSharing() {
             <h3 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: '#fff' }}>
               Drag & Drop files here, or click to browse
             </h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '2rem', maxWidth: '360px' }}>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: 0, maxWidth: '360px' }}>
               Supports JPG, PNG, MP4. Media will instantly sync with the client's guest galleries.
             </p>
-            <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-              <button className="btn btn-gold" style={{ padding: '0.5rem 1.5rem', fontSize: '0.8rem' }} onClick={(e) => { e.stopPropagation(); simulateBulkUpload(6); }}>
-                Bulk Upload Simulation (6 files)
-              </button>
-              <button className="btn btn-outline" style={{ padding: '0.5rem 1.5rem', fontSize: '0.8rem' }} onClick={(e) => { e.stopPropagation(); simulateCameraCapture(); }}>
-                <Camera size={14} />
-                <span>Simulate Camera Upload</span>
-              </button>
-            </div>
           </div>
 
           {/* Upload Progress Loader (Visible when uploading) */}

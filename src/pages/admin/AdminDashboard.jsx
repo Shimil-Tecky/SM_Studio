@@ -96,7 +96,7 @@ export default function AdminDashboard() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', animation: 'fadeIn 0.5s ease' }}>
       
       {/* Page Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
         <div>
           <span style={{ fontSize: '0.75rem', color: 'var(--gold-primary)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '1px' }}>
             System Core
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
 
       {/* Statistics Cards */}
       <div className="dashboard-grid">
-        <div className="glass-panel" style={{ padding: '1.5rem', backgroundColor: 'rgba(13,13,13,0.3)' }}>
+        <div className="glass-panel" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', color: 'var(--text-secondary)' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: '600', textTransform: 'uppercase' }}>Total Events</span>
             <CalendarDays size={20} color="var(--gold-primary)" />
@@ -125,7 +125,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '1.5rem', backgroundColor: 'rgba(13,13,13,0.3)' }}>
+        <div className="glass-panel" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', color: 'var(--text-secondary)' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: '600', textTransform: 'uppercase' }}>Online Viewers</span>
             <Eye size={20} color="var(--gold-primary)" />
@@ -137,7 +137,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '1.5rem', backgroundColor: 'rgba(13,13,13,0.3)' }}>
+        <div className="glass-panel" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', color: 'var(--text-secondary)' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: '600', textTransform: 'uppercase' }}>Uploaded Media</span>
             <Camera size={20} color="var(--gold-primary)" />
@@ -149,7 +149,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="glass-panel" style={{ padding: '1.5rem', backgroundColor: 'rgba(13,13,13,0.3)' }}>
+        <div className="glass-panel" style={{ padding: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', color: 'var(--text-secondary)' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: '600', textTransform: 'uppercase' }}>Team Roster</span>
             <Users size={20} color="var(--gold-primary)" />
@@ -175,8 +175,8 @@ export default function AdminDashboard() {
         `}} />
 
         {/* Daily Upload Area Chart */}
-        <div className="glass-panel" style={{ padding: '1.5rem', backgroundColor: 'rgba(13,13,13,0.2)', minWidth: 0 }}>
-          <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+        <div className="glass-panel" style={{ padding: '1.5rem', minWidth: 0 }}>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
             Daily Media Uploads Volume
           </h3>
           <div style={{ width: '100%', height: '300px' }}>
@@ -188,10 +188,10 @@ export default function AdminDashboard() {
                     <stop offset="95%" stopColor="var(--gold-primary)" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                 <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={12} />
                 <YAxis stroke="var(--text-secondary)" fontSize={12} />
-                <Tooltip contentStyle={{ backgroundColor: '#0d0d0d', border: '1px solid var(--border-color)', borderRadius: '8px' }} />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} />
                 <Area type="monotone" dataKey="Photos" stroke="var(--gold-primary)" fillOpacity={1} fill="url(#colorPhotos)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
@@ -199,8 +199,8 @@ export default function AdminDashboard() {
         </div>
 
         {/* Storage Pie Chart */}
-        <div className="glass-panel" style={{ padding: '1.5rem', backgroundColor: 'rgba(13,13,13,0.2)', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
             Storage Breakdown (1.14 TB)
           </h3>
           <div style={{ width: '100%', height: '200px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
@@ -219,7 +219,7 @@ export default function AdminDashboard() {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: '#0d0d0d', border: '1px solid var(--border-color)', borderRadius: '8px' }} />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '8px', color: 'var(--text-primary)' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
@@ -246,17 +246,17 @@ export default function AdminDashboard() {
       }} className="charts-row">
         
         {/* Hourly Traffic Bar Chart */}
-        <div className="glass-panel" style={{ padding: '1.5rem', backgroundColor: 'rgba(13,13,13,0.2)', minWidth: 0 }}>
-          <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+        <div className="glass-panel" style={{ padding: '1.5rem', minWidth: 0 }}>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
             Peak Guest Activity (Today)
           </h3>
           <div style={{ width: '100%', height: '240px' }}>
             <ResponsiveContainer width="99%" height="100%">
               <BarChart data={trafficData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
                 <XAxis dataKey="time" stroke="var(--text-secondary)" fontSize={11} />
                 <YAxis stroke="var(--text-secondary)" fontSize={11} />
-                <Tooltip contentStyle={{ backgroundColor: '#0d0d0d', border: '1px solid var(--border-color)' }} />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', color: 'var(--text-primary)' }} />
                 <Bar dataKey="Guests" fill="var(--gold-secondary)" radius={[4, 4, 0, 0]}>
                   {trafficData.map((entry, index) => (
                     <Cell 
@@ -271,8 +271,8 @@ export default function AdminDashboard() {
         </div>
 
         {/* Recent Activities Panel */}
-        <div className="glass-panel" style={{ padding: '1.5rem', backgroundColor: 'rgba(13,13,13,0.2)' }}>
-          <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
+        <div className="glass-panel" style={{ padding: '1.5rem' }}>
+          <h3 style={{ fontSize: '1.1rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.5rem' }}>
             System Activity Log
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -285,7 +285,7 @@ export default function AdminDashboard() {
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     paddingBottom: '0.8rem',
-                    borderBottom: idx !== recentActivities.length - 1 ? '1px solid rgba(255,255,255,0.03)' : 'none'
+                    borderBottom: idx !== recentActivities.length - 1 ? '1px solid var(--border-color)' : 'none'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                       <div style={{
@@ -297,7 +297,7 @@ export default function AdminDashboard() {
                         <Icon size={16} />
                       </div>
                       <div>
-                        <p style={{ fontSize: '0.85rem', fontWeight: '500', color: '#fff' }}>{act.action}</p>
+                        <p style={{ fontSize: '0.85rem', fontWeight: '500', color: 'var(--text-primary)' }}>{act.action}</p>
                         <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
                           {formatTime(act.timestamp)} {act.user ? `by ${act.user}` : ''}
                         </span>
@@ -305,7 +305,7 @@ export default function AdminDashboard() {
                     </div>
                     <span style={{
                       fontSize: '0.65rem',
-                      backgroundColor: 'rgba(255,255,255,0.05)',
+                      backgroundColor: 'var(--nav-bg)',
                       padding: '0.2rem 0.6rem',
                       borderRadius: '4px',
                       color: 'var(--text-secondary)'

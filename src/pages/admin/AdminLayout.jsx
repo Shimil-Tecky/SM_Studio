@@ -29,9 +29,9 @@ export default function AdminLayout() {
     <div style={{
       width: '100%',
       minHeight: '90vh',
-      background: 'transparent',
-      color: '#fff',
-      padding: '2rem 1.5rem 5rem'
+      backgroundColor: 'var(--bg-deep)',
+      color: 'var(--text-primary)',
+      padding: '6rem 1.5rem 5rem'
     }}>
       <div style={{
         maxWidth: '1400px',

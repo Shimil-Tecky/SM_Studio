@@ -3,9 +3,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import { QrCode, Lock, Tag, ShieldCheck, Camera, UploadCloud, Mail } from 'lucide-react';
 import jsQR from 'jsqr';
+import GoogleSignInModal from '../components/GoogleSignInModal';
 
 export default function ClientLogin() {
-  const { user, setUser, loginClient, loginClientViaQr, registerGuest, events, addNotification } = useContext(AppContext);
+  const { user, setUser, loginClient, loginClientViaEmail, loginClientViaQr, events, addNotification } = useContext(AppContext);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
@@ -16,46 +17,46 @@ export default function ClientLogin() {
   const [activeTab, setActiveTab] = useState('credentials'); // credentials or qrScan
   const [qrScanning, setQrScanning] = useState(false);
   const [qrSuccessMessage, setQrSuccessMessage] = useState('');
+  const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
   
   const [cameraStream, setCameraStream] = useState(null);
   const videoRef = React.useRef(null);
 
   const handleGoogleSignIn = () => {
-    const emailInput = window.prompt("Enter your Google Account email to authenticate:", "client@example.com");
-    if (emailInput === null) return; // User cancelled
+    setIsGoogleModalOpen(true);
+  };
 
-    const cleanEmail = emailInput.trim().toLowerCase();
+  const handleGoogleSignInSuccess = async (googleUser) => {
+    const cleanEmail = googleUser.email.trim().toLowerCase();
     setError('');
 
     if (addNotification) {
       addNotification("Google Auth", `Authenticating ${cleanEmail}...`, "info");
     }
 
-    // Simulate Google Account checking against registered clients
-    setTimeout(async () => {
-      const matchedEvent = events.find(e => e.email && e.email.toLowerCase() === cleanEmail);
+    const matchedEvent = events.find(e => e.email && e.email.toLowerCase() === cleanEmail);
 
-      if (matchedEvent) {
-        const clientUser = {
-          role: 'client',
-          isGuest: false,
-          eventId: matchedEvent.id,
-          eventName: matchedEvent.name,
-          clientName: matchedEvent.clientName,
-          email: matchedEvent.email
-        };
-        if (setUser) setUser(clientUser);
-        if (addNotification) {
-          addNotification("Access Granted", `Successfully authenticated via Google for event "${matchedEvent.name}"`, "success");
-        }
-        navigate('/client-dashboard', { replace: true });
-      } else {
-        setError('Access Denied: This Google Account is not registered as a client for any event. Guests cannot sign in with Google.');
-        if (addNotification) {
-          addNotification("Access Denied", "Google Account not registered.", "error");
-        }
+    if (matchedEvent) {
+      const clientUser = {
+        role: 'client',
+        isGuest: false,
+        eventId: matchedEvent.id,
+        eventName: matchedEvent.name,
+        clientName: matchedEvent.clientName,
+        email: matchedEvent.email
+      };
+      if (setUser) setUser(clientUser);
+      sessionStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
+      if (addNotification) {
+        addNotification("Access Granted", `Successfully authenticated via Google for event "${matchedEvent.name}"`, "success");
       }
-    }, 1500);
+      navigate('/client-dashboard', { replace: true });
+    } else {
+      setError('Access Denied: This Google Account is not registered as a client for any event. Guests must sign in via the Guest Portal.');
+      if (addNotification) {
+        addNotification("Access Denied", "Google Account not registered.", "error");
+      }
+    }
   };
 
   // Redirect if already logged in as client
@@ -114,25 +115,11 @@ export default function ClientLogin() {
     setError('');
     const cleanEmail = clientEmail.trim().toLowerCase();
     
-    // Find event matching this email address in state or Supabase
-    const matchedEvent = events.find(evt => evt.email && evt.email.toLowerCase() === cleanEmail);
-    if (matchedEvent) {
-      const clientUser = {
-        role: 'client',
-        isGuest: false,
-        eventId: matchedEvent.id,
-        eventName: matchedEvent.name,
-        clientName: matchedEvent.clientName,
-        email: matchedEvent.email
-      };
-      setUser(clientUser);
-      sessionStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
-      if (addNotification) {
-        addNotification("Access Granted", `Successfully logged in via Gmail for event "${matchedEvent.name}"`, "success");
-      }
-      navigate(`/client-dashboard?id=${matchedEvent.id}`, { replace: true });
+    const result = await loginClientViaEmail(cleanEmail);
+    if (result.success) {
+      navigate(`/client-dashboard?id=${result.user.eventId}`, { replace: true });
     } else {
-      setError("This Gmail address is not registered for any active event.");
+      setError(result.message);
     }
   };
 
@@ -618,6 +605,12 @@ export default function ClientLogin() {
         )}
 
       </div>
+      
+      <GoogleSignInModal 
+        isOpen={isGoogleModalOpen}
+        onClose={() => setIsGoogleModalOpen(false)}
+        onSuccess={handleGoogleSignInSuccess}
+      />
     </div>
   );
 }

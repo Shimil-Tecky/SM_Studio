@@ -638,6 +638,56 @@ export const AppProvider = ({ children }) => {
     return { success: false, message: "Invalid credentials or Event ID." };
   };
 
+  const loginClientViaEmail = async (email) => {
+    const cleanEmail = (email || '').trim().toLowerCase();
+
+    if (supabase) {
+      try {
+        const { data: eventData, error } = await supabase
+          .from('events')
+          .select('*')
+          .ilike('email', cleanEmail);
+          
+        if (eventData && eventData.length > 0) {
+          const dbEvent = eventData[0];
+          const clientUser = {
+            role: 'client',
+            isGuest: false,
+            eventId: dbEvent.id,
+            eventName: dbEvent.name,
+            clientName: dbEvent.client_name,
+            email: dbEvent.email
+          };
+          setUser(clientUser);
+          sessionStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
+          addNotification("Welcome Back", `Successfully accessed the gallery for ${dbEvent.name}`, "info");
+          return { success: true, user: clientUser };
+        }
+        
+        return { success: false, message: "This Gmail address is not registered for any active event." };
+      } catch (err) {
+        console.error("Direct Supabase email login check failed, falling back to state:", err);
+      }
+    }
+
+    const foundEvent = events.find(e => e.email && e.email.toLowerCase() === cleanEmail);
+    if (foundEvent) {
+      const clientUser = {
+        role: 'client',
+        isGuest: false,
+        eventId: foundEvent.id,
+        eventName: foundEvent.name,
+        clientName: foundEvent.clientName,
+        email: foundEvent.email
+      };
+      setUser(clientUser);
+      sessionStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
+      addNotification("Welcome Back", `Successfully accessed the gallery for ${foundEvent.name}`, "info");
+      return { success: true, user: clientUser };
+    }
+    return { success: false, message: "This Gmail address is not registered for any active event." };
+  };
+
   // Client Auth via QR (No Password required)
   const loginClientViaQr = async (eventId) => {
     const cleanId = (eventId || '').trim();
@@ -1458,6 +1508,7 @@ export const AppProvider = ({ children }) => {
       settings,
       notifications,
       loginClient,
+      loginClientViaEmail,
       loginClientViaQr,
       registerGuest,
       loginAdmin,

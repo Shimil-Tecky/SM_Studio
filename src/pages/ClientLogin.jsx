@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
-import { QrCode, Lock, Tag, ShieldCheck, Camera } from 'lucide-react';
+import { QrCode, Lock, Tag, ShieldCheck, Camera, UploadCloud } from 'lucide-react';
+import jsQR from 'jsqr';
 
 export default function ClientLogin() {
   const { user, setUser, loginClient, loginClientViaQr, registerGuest, events, addNotification } = useContext(AppContext);
@@ -107,6 +108,105 @@ export default function ClientLogin() {
     }
   };
 
+  const handleScannedData = async (scannedData) => {
+    let eventIdVal = scannedData.trim();
+    
+    // Parse URL if scannedData is a URL
+    try {
+      if (scannedData.includes('http://') || scannedData.includes('https://')) {
+        const url = new URL(scannedData);
+        const idParam = url.searchParams.get('id');
+        if (idParam) {
+          eventIdVal = idParam;
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse URL from QR:", e);
+    }
+
+    setEventId(eventIdVal);
+    setQrSuccessMessage(`QR Code recognized! Event ID: ${eventIdVal}. Opening gallery...`);
+    
+    const result = await loginClientViaQr(eventIdVal);
+    if (result.success) {
+      setTimeout(() => {
+        navigate(`/client-dashboard?id=${eventIdVal}`, { replace: true });
+      }, 1500);
+    } else {
+      setError(result.message || 'QR Login failed.');
+    }
+  };
+
+  const handleQrUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setError('');
+    setQrSuccessMessage('');
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height);
+        if (code && code.data) {
+          handleScannedData(code.data);
+        } else {
+          setError("No valid QR code found in the uploaded image.");
+        }
+      };
+      img.src = event.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  useEffect(() => {
+    let active = true;
+    let animId = null;
+
+    const tick = () => {
+      if (!active) return;
+      if (videoRef.current && videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+        const video = videoRef.current;
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: 'dontInvert',
+        });
+        if (code && code.data) {
+          if (video.srcObject) {
+            video.srcObject.getTracks().forEach(track => track.stop());
+          }
+          setCameraStream(null);
+          setQrScanning(false);
+          handleScannedData(code.data);
+          return;
+        }
+      }
+      animId = requestAnimationFrame(tick);
+    };
+
+    if (qrScanning && cameraStream) {
+      animId = requestAnimationFrame(tick);
+    }
+
+    return () => {
+      active = false;
+      if (animId) {
+        cancelAnimationFrame(animId);
+      }
+    };
+  }, [qrScanning, cameraStream]);
+
   const startCamera = async () => {
     setQrScanning(true);
     setQrSuccessMessage('');
@@ -114,7 +214,7 @@ export default function ClientLogin() {
     
     try {
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Camera request timeout")), 3000)
+        setTimeout(() => reject(new Error("Camera request timeout")), 4000)
       );
 
       const stream = await Promise.race([
@@ -130,45 +230,10 @@ export default function ClientLogin() {
         }
       }, 100);
       
-      // Simulate code detection after 3.5 seconds of showing the live feed
-      setTimeout(async () => {
-        // Stop camera tracks
-        stream.getTracks().forEach(track => track.stop());
-        setCameraStream(null);
-        setQrScanning(false);
-        
-        // Match an active event or default
-        const activeEvent = events.find(e => e.status === 'Active') || events[0];
-        if (activeEvent) {
-          setEventId(activeEvent.id);
-          setQrSuccessMessage(`Successfully scanned QR code for event: "${activeEvent.name}". Opening gallery...`);
-          
-          setTimeout(async () => {
-            await loginClientViaQr(activeEvent.id);
-            navigate(`/client-dashboard?id=${activeEvent.id}`, { replace: true });
-          }, 1500);
-        } else {
-          setError('No active event found to scan.');
-        }
-      }, 4000);
-      
     } catch (err) {
-      console.error("Camera access failed, falling back to mock animation:", err);
-      // Fallback if permission denied or no camera (e.g. desktop sandbox)
-      setTimeout(() => {
-        setQrScanning(false);
-        const activeEvent = events.find(e => e.status === 'Active') || events[0];
-        if (activeEvent) {
-          setEventId(activeEvent.id);
-          setQrSuccessMessage(`[Simulated] QR Code recognized for event: "${activeEvent.name}".`);
-          setTimeout(async () => {
-            await loginClientViaQr(activeEvent.id);
-            navigate(`/client-dashboard?id=${activeEvent.id}`, { replace: true });
-          }, 1500);
-        } else {
-          setError('No active event found to scan.');
-        }
-      }, 3000);
+      console.error("Camera access failed:", err);
+      setError("Failed to access camera. Please upload a screenshot of your QR code or enter credentials manually.");
+      setQrScanning(false);
     }
   };
 
@@ -433,12 +498,13 @@ export default function ClientLogin() {
                 </span>
               </div>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%', alignItems: 'center' }}>
                 <QrCode size={96} strokeWidth={1} color="var(--gold-secondary)" />
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', textAlign: 'center' }}>
                   Hold your printed event invitation QR code in front of your camera, or upload a screenshot to log in instantly.
                 </p>
                 <button 
+                  type="button"
                   onClick={startCamera}
                   className="btn btn-gold animate-pulse-gold" 
                   style={{ width: '100%' }}
@@ -446,6 +512,38 @@ export default function ClientLogin() {
                   <Camera size={18} />
                   <span>Start Camera Scanner</span>
                 </button>
+                
+                <div style={{ display: 'flex', alignItems: 'center', width: '100%', margin: '0.25rem 0', gap: '1rem' }}>
+                  <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.08)' }}></div>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '1px' }}>or</span>
+                  <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.08)' }}></div>
+                </div>
+
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={handleQrUpload}
+                  style={{ display: 'none' }}
+                  id="qr-file-upload"
+                />
+                <label 
+                  htmlFor="qr-file-upload" 
+                  className="btn btn-outline" 
+                  style={{ 
+                    width: '100%', 
+                    cursor: 'pointer', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'center', 
+                    gap: '0.5rem',
+                    borderColor: 'rgba(255, 255, 255, 0.12)',
+                    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                    fontSize: '0.85rem'
+                  }}
+                >
+                  <UploadCloud size={18} />
+                  <span>Upload QR Screenshot</span>
+                </label>
               </div>
             )}
           </div>

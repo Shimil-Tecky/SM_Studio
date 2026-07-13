@@ -973,7 +973,11 @@ export const AppProvider = ({ children }) => {
       date: eventData.date,
       venue: eventData.venue || '',
       coverImage: eventData.coverImage || "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?auto=format&fit=crop&q=80&w=800",
-      qrCodeUrl: "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(window.location.origin + "/client-dashboard?id=" + eventId + "&qr=true"),
+      qrCodeUrl: "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + encodeURIComponent(
+        ((window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'))
+          ? 'https://sm-studio-delta.vercel.app'
+          : window.location.origin) + "/client-dashboard?id=" + eventId + "&qr=true"
+      ),
       photographer: eventData.photographer || "Unassigned",
       activeClients: 0,
       status: eventData.status || "Upcoming",

@@ -1,8 +1,8 @@
 // Supabase client initialization wrapper
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://mkcxpxicqlqojxlizuwk.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1rY3hweGljcWxxb2p4bGl6dXdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMwNDYzNzksImV4cCI6MjA5ODYyMjM3OX0.O1m4d9trj3tbq7tOjbjwpQw3oO5rgRVxq2TBRitgJg4';
 
 let supabase = null;
 

@@ -114,7 +114,10 @@ export default function EventManagement() {
   };
 
   const handleCopyCredentials = (evt) => {
-    const creds = `Gallery Link: ${window.location.origin}/client-login\nEvent ID: ${evt.id}\nEmail: ${evt.email}\nPassword: ${evt.password}`;
+    const baseOrigin = (window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'))
+      ? 'https://sm-studio-delta.vercel.app'
+      : window.location.origin;
+    const creds = `Gallery Link: ${baseOrigin}/client-login\nEvent ID: ${evt.id}\nEmail: ${evt.email}\nPassword: ${evt.password}`;
     navigator.clipboard.writeText(creds);
     addNotification("Credentials Copied", "Copy details to WhatsApp or Email to share with client.", "success");
   };

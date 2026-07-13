@@ -136,7 +136,11 @@ export default function Events() {
                       marginBottom: '0.75rem'
                     }}>
                       <img 
-                        src={evt.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + '/client-dashboard?id=' + evt.id + '&qr=true')}`} 
+                        src={evt.qrCodeUrl || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(
+                          ((window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'))
+                            ? 'https://sm-studio-delta.vercel.app'
+                            : window.location.origin) + '/client-dashboard?id=' + evt.id + '&qr=true'
+                        )}`} 
                         alt="Event QR Code" 
                         style={{ width: '130px', height: '130px', display: 'block' }} 
                       />

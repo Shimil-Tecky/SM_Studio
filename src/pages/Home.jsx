@@ -42,7 +42,9 @@ export default function Home() {
     e.preventDefault();
     if (qrInput.trim()) {
       const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(
-        window.location.origin + '/client-dashboard?id=' + qrInput.trim() + '&qr=true'
+        ((window.location.origin.includes('localhost') || window.location.origin.includes('127.0.0.1'))
+          ? 'https://sm-studio-delta.vercel.app'
+          : window.location.origin) + '/client-dashboard?id=' + qrInput.trim() + '&qr=true'
       )}`;
       setGeneratedQr(qrUrl);
     }

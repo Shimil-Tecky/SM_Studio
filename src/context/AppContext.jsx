@@ -199,7 +199,10 @@ export const AppProvider = ({ children }) => {
                 ...evt,
                 clientName: evt.client_name,
                 coverImage: evt.cover_image,
-                qrCodeUrl: evt.qr_code_url,
+                qrCodeUrl: evt.qr_code_url ? evt.qr_code_url
+                  .replace(/localhost%3A5173/g, 'sm-studio-delta.vercel.app')
+                  .replace(/localhost:5173/g, 'sm-studio-delta.vercel.app')
+                  .replace(/127\.0\.0\.1/g, 'sm-studio-delta.vercel.app') : evt.qr_code_url,
                 activeClients: evt.active_clients,
                 photos: eventMedia.filter(m => m.type === 'photo').map(m => ({
                   id: m.id,

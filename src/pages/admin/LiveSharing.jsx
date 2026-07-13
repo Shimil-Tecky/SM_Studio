@@ -125,20 +125,39 @@ export default function LiveSharing() {
 
         // ── Upload images to Supabase Storage ──
         const imageUploadPromises = imageFiles.map(async (file, idx) => {
-          const ext = file.name.split('.').pop();
-          const path = `events/${folderName}/photos/${Date.now()}_${idx}.${ext}`;
-          const url = await uploadFileToStorage(file, path);
-          setUploadProgress(prev => Math.min(prev + Math.floor(80 / Math.max(totalFiles, 1)), 80));
-          return url;
+          try {
+            const ext = file.name.split('.').pop();
+            const path = `events/${folderName}/photos/${Date.now()}_${idx}.${ext}`;
+            const url = await uploadFileToStorage(file, path);
+            setUploadProgress(prev => Math.min(prev + Math.floor(80 / Math.max(totalFiles, 1)), 80));
+            return url;
+          } catch (storageErr) {
+            console.warn("Storage upload failed, falling back to Base64 database storage:", storageErr);
+            return new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = (e) => resolve(e.target.result);
+              reader.readAsDataURL(file);
+            });
+          }
         });
 
         // ── Upload videos to Supabase Storage ──
         const videoUploadPromises = videoFiles.map(async (file, idx) => {
-          const ext = file.name.split('.').pop();
-          const path = `events/${folderName}/videos/${Date.now()}_${idx}.${ext}`;
-          const url = await uploadFileToStorage(file, path);
-          setUploadProgress(prev => Math.min(prev + Math.floor(80 / Math.max(totalFiles, 1)), 80));
-          return { name: file.name, url };
+          try {
+            const ext = file.name.split('.').pop();
+            const path = `events/${folderName}/videos/${Date.now()}_${idx}.${ext}`;
+            const url = await uploadFileToStorage(file, path);
+            setUploadProgress(prev => Math.min(prev + Math.floor(80 / Math.max(totalFiles, 1)), 80));
+            return { name: file.name, url };
+          } catch (storageErr) {
+            console.warn("Storage upload failed for video, falling back to Base64 database storage:", storageErr);
+            const dataUrl = await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = (e) => resolve(e.target.result);
+              reader.readAsDataURL(file);
+            });
+            return { name: file.name, url: dataUrl };
+          }
         });
 
         [uploadedImageUrls, uploadedVideos] = await Promise.all([

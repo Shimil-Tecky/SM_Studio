@@ -10,14 +10,19 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
-    const wasGuest = user?.isGuest;
     logout();
-    if (wasGuest) {
-      navigate('/client-login');
-    } else {
-      navigate('/');
-    }
+    navigate('/');
     setMobileMenuOpen(false);
+  };
+
+  const handleAuthClick = () => {
+    if (user?.isGuest) {
+      const eventIdParam = user?.eventId || '';
+      navigate(`/guest-login?id=${eventIdParam}`);
+      setMobileMenuOpen(false);
+    } else {
+      handleLogout();
+    }
   };
 
   const isActive = (path) => {
@@ -217,7 +222,7 @@ export default function Navbar() {
                   {user.role === 'client' ? (user.isGuest ? 'guest' : 'client') : user.role}
                 </span>
               </div>
-              <button onClick={handleLogout} style={{
+              <button onClick={handleAuthClick} style={{
                 background: user.isGuest ? 'rgba(212, 175, 55, 0.15)' : 'rgba(220, 38, 38, 0.15)',
                 border: user.isGuest ? '1px solid rgba(212, 175, 55, 0.4)' : '1px solid rgba(220, 38, 38, 0.4)',
                 color: user.isGuest ? 'var(--gold-primary)' : '#ef4444',
@@ -450,7 +455,7 @@ export default function Navbar() {
                     {user.role === 'client' ? (user.isGuest ? 'guest' : 'client') : user.role}
                   </div>
                 </div>
-                 <button onClick={handleLogout} className={user.isGuest ? "btn btn-gold" : "btn btn-danger"} style={{ width: '100%', borderRadius: '50px', fontSize: '0.8rem', padding: '0.5rem' }}>
+                 <button onClick={handleAuthClick} className={user.isGuest ? "btn btn-gold" : "btn btn-danger"} style={{ width: '100%', borderRadius: '50px', fontSize: '0.8rem', padding: '0.5rem' }}>
                   {user.isGuest ? <LogIn size={14} /> : <LogOut size={14} />}
                   <span>{user.isGuest ? 'Sign In' : 'Logout'}</span>
                 </button>

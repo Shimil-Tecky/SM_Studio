@@ -165,9 +165,10 @@ ALTER TABLE settings DISABLE ROW LEVEL SECURITY;
 CREATE TABLE guests (
   id SERIAL PRIMARY KEY,
   name VARCHAR(100),
-  email VARCHAR(100) UNIQUE,
-  phone_number VARCHAR(15) UNIQUE,
+  email VARCHAR(100),
+  phone_number VARCHAR(15),
   auth_provider VARCHAR(50), 
+  event_id TEXT REFERENCES events(id) ON DELETE CASCADE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

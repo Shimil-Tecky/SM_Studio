@@ -10,6 +10,7 @@ import Portfolio from './pages/Portfolio';
 import Events from './pages/Events';
 import ClientLogin from './pages/ClientLogin';
 import ClientDashboard from './pages/ClientDashboard';
+import GuestLogin from './pages/GuestLogin';
 import AdminLogin from './pages/AdminLogin';
 
 // Admin Shell & Pages
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/events" element={<Events />} />
           <Route path="/client-login" element={<ClientLogin />} />
           <Route path="/client-dashboard" element={<ClientDashboard />} />
+          <Route path="/guest-login" element={<GuestLogin />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           
           {/* Nested Administrator Console */}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
-import { QrCode, Lock, Tag, ShieldCheck, Camera, UploadCloud } from 'lucide-react';
+import { QrCode, Lock, Tag, ShieldCheck, Camera, UploadCloud, Mail } from 'lucide-react';
 import jsQR from 'jsqr';
 
 export default function ClientLogin() {
@@ -11,6 +11,7 @@ export default function ClientLogin() {
   
   const [eventId, setEventId] = useState('');
   const [password, setPassword] = useState('');
+  const [clientEmail, setClientEmail] = useState('');
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('credentials'); // credentials or qrScan
   const [qrScanning, setQrScanning] = useState(false);
@@ -105,6 +106,33 @@ export default function ClientLogin() {
       navigate('/client-dashboard', { replace: true });
     } else {
       setError(result.message);
+    }
+  };
+
+  const handleEmailSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    const cleanEmail = clientEmail.trim().toLowerCase();
+    
+    // Find event matching this email address in state or Supabase
+    const matchedEvent = events.find(evt => evt.email && evt.email.toLowerCase() === cleanEmail);
+    if (matchedEvent) {
+      const clientUser = {
+        role: 'client',
+        isGuest: false,
+        eventId: matchedEvent.id,
+        eventName: matchedEvent.name,
+        clientName: matchedEvent.clientName,
+        email: matchedEvent.email
+      };
+      setUser(clientUser);
+      sessionStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
+      if (addNotification) {
+        addNotification("Access Granted", `Successfully logged in via Gmail for event "${matchedEvent.name}"`, "success");
+      }
+      navigate(`/client-dashboard?id=${matchedEvent.id}`, { replace: true });
+    } else {
+      setError("This Gmail address is not registered for any active event.");
     }
   };
 
@@ -287,7 +315,7 @@ export default function ClientLogin() {
           display: 'flex',
           borderBottom: '1px solid rgba(255,255,255,0.05)',
           marginBottom: '2rem',
-          gap: '1rem'
+          gap: '0.75rem'
         }}>
           <button 
             onClick={() => setActiveTab('credentials')}
@@ -300,12 +328,30 @@ export default function ClientLogin() {
               paddingBottom: '0.75rem',
               fontWeight: '600',
               cursor: 'pointer',
-              fontSize: '0.85rem',
+              fontSize: '0.8rem',
               textTransform: 'uppercase',
               letterSpacing: '0.5px'
             }}
           >
-            Access Credentials
+            Credentials
+          </button>
+          <button 
+            onClick={() => setActiveTab('email')}
+            style={{
+              flex: 1,
+              background: 'none',
+              border: 'none',
+              borderBottom: activeTab === 'email' ? '2px solid var(--gold-primary)' : '2px solid transparent',
+              color: activeTab === 'email' ? 'var(--gold-primary)' : 'var(--text-secondary)',
+              paddingBottom: '0.75rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              fontSize: '0.8rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
+            }}
+          >
+            Gmail Login
           </button>
           <button 
             onClick={() => setActiveTab('qrScan')}
@@ -318,12 +364,12 @@ export default function ClientLogin() {
               paddingBottom: '0.75rem',
               fontWeight: '600',
               cursor: 'pointer',
-              fontSize: '0.85rem',
+              fontSize: '0.8rem',
               textTransform: 'uppercase',
               letterSpacing: '0.5px'
             }}
           >
-            Scan QR Code
+            QR Scan
           </button>
         </div>
 
@@ -359,7 +405,29 @@ export default function ClientLogin() {
           </div>
         )}
 
-        {activeTab === 'credentials' ? (
+        {activeTab === 'email' ? (
+          <form onSubmit={handleEmailSubmit}>
+            <div className="form-group" style={{ marginBottom: '2rem' }}>
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <Mail size={12} />
+                <span>Client Gmail</span>
+              </label>
+              <input 
+                type="email" 
+                value={clientEmail}
+                onChange={(e) => setClientEmail(e.target.value)}
+                placeholder="e.g. client@gmail.com"
+                className="form-control"
+                required
+              />
+            </div>
+
+            <button type="submit" className="btn btn-gold" style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.75rem' }}>
+              <ShieldCheck size={18} />
+              <span>Unlock with Gmail</span>
+            </button>
+          </form>
+        ) : activeTab === 'credentials' ? (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>

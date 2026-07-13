@@ -691,7 +691,8 @@ export const AppProvider = ({ children }) => {
       name: guestData.name || 'Anonymous Guest',
       email: guestData.email || null,
       phone_number: guestData.phoneNumber || null,
-      auth_provider: guestData.authProvider || 'Google'
+      auth_provider: guestData.authProvider || 'Google',
+      event_id: guestData.eventId || null
     };
 
     if (supabase) {

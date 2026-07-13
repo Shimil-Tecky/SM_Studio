@@ -169,6 +169,7 @@ export const AppProvider = ({ children }) => {
   });
   const [adminAccounts, setAdminAccounts] = useState(INITIAL_ADMIN_ACCOUNTS);
   const [notifications, setNotifications] = useState([]);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   // Fetch initial data (from Supabase if available, otherwise localStorage)
   useEffect(() => {
@@ -263,6 +264,7 @@ export const AppProvider = ({ children }) => {
               }))
             );
           }
+          setDataLoaded(true);
         } catch (err) {
           console.error("Error loading data from Supabase:", err);
           loadLocalFallback();
@@ -309,6 +311,7 @@ export const AppProvider = ({ children }) => {
           }
         } catch (e) {}
       }
+      setDataLoaded(true);
     }
 
     initData();
@@ -1450,6 +1453,7 @@ export const AppProvider = ({ children }) => {
       events,
       employees,
       user,
+      dataLoaded,
       settings,
       notifications,
       loginClient,

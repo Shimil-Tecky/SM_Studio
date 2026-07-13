@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 export default function ClientDashboard() {
-  const { user, loginClientViaQr, events, toggleLikePhoto, addNotification } = useContext(AppContext);
+  const { user, loginClientViaQr, events, toggleLikePhoto, addNotification, dataLoaded } = useContext(AppContext);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -69,7 +69,7 @@ export default function ClientDashboard() {
   // Find the event for the logged-in client
   const event = events.find(e => e.id.toLowerCase() === user?.eventId?.toLowerCase());
 
-  if (authLoading) {
+  if (authLoading || !dataLoaded) {
     return (
       <div style={{
         minHeight: '80vh',

@@ -6,12 +6,12 @@ const ws = new WebSocket(wsUrl);
 
 ws.onopen = () => {
   console.log("Connected to browser WebSocket");
-  // Let's create a new target page to navigate to http://localhost:5173/admin-login
+  // Let's create a new target page to navigate to http://localhost:5173/admin/login
   const msg = {
     id: 1,
     method: 'Target.createTarget',
     params: {
-      url: 'http://localhost:5173/admin-login'
+      url: 'http://localhost:5173/admin/login'
     }
   };
   ws.send(JSON.stringify(msg));

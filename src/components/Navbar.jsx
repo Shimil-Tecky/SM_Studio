@@ -264,7 +264,7 @@ export default function Navbar() {
               <User size={14} />
               <span>Client Portal</span>
             </Link>
-            <Link to="/admin-login" className="nav-bubble-gold" style={{
+            <Link to="/guest-login" className="nav-bubble-gold" style={{
               fontSize: '0.85rem',
               fontWeight: '600',
               textTransform: 'uppercase',
@@ -281,8 +281,8 @@ export default function Navbar() {
               gap: '0.5rem',
               cursor: 'pointer'
             }}>
-              <Shield size={14} />
-              <span>Admin Login</span>
+              <LogIn size={14} />
+              <span>Guest Login</span>
             </Link>
           </div>
         )}
@@ -482,7 +482,7 @@ export default function Navbar() {
                 <User size={16} />
                 <span>Client Portal</span>
               </Link>
-              <Link to="/admin-login" onClick={() => setMobileMenuOpen(false)} className="nav-bubble-gold" style={{
+              <Link to="/guest-login" onClick={() => setMobileMenuOpen(false)} className="nav-bubble-gold" style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -498,8 +498,8 @@ export default function Navbar() {
                 boxShadow: 'var(--gold-glow)',
                 textDecoration: 'none'
               }}>
-                <Shield size={16} />
-                <span>Admin Login</span>
+                <LogIn size={16} />
+                <span>Guest Login</span>
               </Link>
             </div>
           )}

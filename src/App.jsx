@@ -43,7 +43,7 @@ export default function App() {
           <Route path="/client-login" element={<ClientLogin />} />
           <Route path="/client-dashboard" element={<ClientDashboard />} />
           <Route path="/guest-login" element={<GuestLogin />} />
-          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           
           {/* Nested Administrator Console */}
           <Route path="/admin" element={<AdminLayout />}>

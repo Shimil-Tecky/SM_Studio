@@ -11,7 +11,7 @@ export default function AdminLayout() {
   // Route protection
   useEffect(() => {
     if (!user || (user.role !== 'Super Admin' && user.role !== 'Event Admin' && user.role !== 'Editor' && user.role !== 'Employee')) {
-      navigate('/admin-login', { replace: true });
+      navigate('/admin/login', { replace: true });
     }
   }, [user, navigate]);
 

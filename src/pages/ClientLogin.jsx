@@ -6,7 +6,7 @@ import jsQR from 'jsqr';
 import GoogleSignInModal from '../components/GoogleSignInModal';
 
 export default function ClientLogin() {
-  const { user, setUser, loginClient, loginClientViaEmail, loginClientViaQr, events, addNotification } = useContext(AppContext);
+  const { user, setUser, loginClient, loginClientViaEmail, loginWithGoogleReal, loginClientViaQr, events, addNotification } = useContext(AppContext);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
@@ -22,8 +22,14 @@ export default function ClientLogin() {
   const [cameraStream, setCameraStream] = useState(null);
   const videoRef = React.useRef(null);
 
-  const handleGoogleSignIn = () => {
-    setIsGoogleModalOpen(true);
+  const handleGoogleSignIn = async () => {
+    try {
+      setError('');
+      await loginWithGoogleReal();
+    } catch (err) {
+      console.warn("Real Google OAuth failed, falling back to mock chooser modal:", err.message);
+      setIsGoogleModalOpen(true);
+    }
   };
 
   const handleGoogleSignInSuccess = async (googleUser) => {

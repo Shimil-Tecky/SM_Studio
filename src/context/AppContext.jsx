@@ -323,6 +323,72 @@ export const AppProvider = ({ children }) => {
     if (savedUser) setUser(JSON.parse(savedUser));
   }, []);
 
+  // Listen to Google OAuth state change callback from Supabase
+  useEffect(() => {
+    if (supabase) {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session && session.user) {
+          const email = session.user.email;
+          const name = session.user.user_metadata?.full_name || session.user.user_metadata?.name || 'Google User';
+          
+          // Check if this email is a registered client
+          const matchedEvent = events.find(e => e.email && e.email.toLowerCase() === email.toLowerCase());
+          
+          if (matchedEvent) {
+            const clientUser = {
+              role: 'client',
+              isGuest: false,
+              eventId: matchedEvent.id,
+              eventName: matchedEvent.name,
+              clientName: matchedEvent.clientName,
+              email: email
+            };
+            setUser(clientUser);
+            sessionStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
+            addNotification("Google Login", `Logged in as client for ${matchedEvent.name}`, "success");
+            // Redirect using window.location.href
+            setTimeout(() => {
+              window.location.href = window.location.origin + '/client-dashboard?id=' + matchedEvent.id;
+            }, 500);
+          } else {
+            // Check if there is a target guest event id in localStorage
+            const targetEventId = localStorage.getItem('google_auth_target_event_id');
+            if (targetEventId) {
+              const matchedEventGuest = events.find(e => e.id.toLowerCase() === targetEventId.toLowerCase());
+              
+              const guestPayload = {
+                name: name,
+                email: email,
+                eventId: targetEventId,
+                authProvider: 'Google'
+              };
+              
+              await registerGuest(guestPayload);
+              
+              const guestUser = {
+                role: 'client',
+                isGuest: false,
+                eventId: targetEventId,
+                eventName: matchedEventGuest?.name || 'Event Gallery',
+                clientName: name,
+                email: email
+              };
+              setUser(guestUser);
+              sessionStorage.setItem('antigravity_current_user', JSON.stringify(guestUser));
+              localStorage.removeItem('google_auth_target_event_id');
+              addNotification("Google Login", `Logged in as guest for ${matchedEventGuest?.name || 'Gallery'}`, "success");
+              // Redirect using window.location.href
+              setTimeout(() => {
+                window.location.href = window.location.origin + '/client-dashboard?id=' + targetEventId;
+              }, 500);
+            }
+          }
+        }
+      });
+      return () => subscription.unsubscribe();
+    }
+  }, [supabase, events]);
+
   // Write changes locally as backup
   useEffect(() => {
     try {
@@ -733,6 +799,28 @@ export const AppProvider = ({ children }) => {
       return { success: true, user: clientUser };
     }
     return { success: false, message: "Invalid Event ID." };
+  };
+
+  const loginWithGoogleReal = async (eventId = '') => {
+    if (supabase) {
+      if (eventId) {
+        localStorage.setItem('google_auth_target_event_id', eventId);
+      }
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin + '/client-login'
+        }
+      });
+      
+      if (error) {
+        throw error;
+      }
+      return data;
+    } else {
+      throw new Error("Supabase is not connected.");
+    }
   };
 
   // Register and persist guest credentials
@@ -1509,6 +1597,7 @@ export const AppProvider = ({ children }) => {
       notifications,
       loginClient,
       loginClientViaEmail,
+      loginWithGoogleReal,
       loginClientViaQr,
       registerGuest,
       loginAdmin,

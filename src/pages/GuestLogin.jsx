@@ -5,7 +5,7 @@ import GoogleSignInModal from '../components/GoogleSignInModal';
 import { Info, LogIn } from 'lucide-react';
 
 export default function GuestLogin() {
-  const { user, setUser, registerGuest, events, addNotification } = useContext(AppContext);
+  const { user, setUser, registerGuest, loginWithGoogleReal, events, addNotification } = useContext(AppContext);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
@@ -23,6 +23,16 @@ export default function GuestLogin() {
       navigate(`/client-dashboard?id=${eventId}`, { replace: true });
     }
   }, [user, navigate, eventId]);
+
+  const handleGoogleClick = async () => {
+    try {
+      setError('');
+      await loginWithGoogleReal(eventId);
+    } catch (err) {
+      console.warn("Real Google OAuth failed, falling back to mock chooser modal:", err.message);
+      setIsGoogleModalOpen(true);
+    }
+  };
 
   const handleGoogleSignInSuccess = async (googleUser) => {
     setLoading(true);
@@ -153,7 +163,7 @@ export default function GuestLogin() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', margin: '2rem 0' }}>
           <button 
             type="button" 
-            onClick={() => setIsGoogleModalOpen(true)}
+            onClick={handleGoogleClick}
             className="btn btn-gold" 
             style={{ width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.75rem', padding: '0.85rem 1.5rem' }}
             disabled={loading}

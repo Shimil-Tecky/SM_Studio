@@ -25,6 +25,24 @@ export default function ClientDashboard() {
   const [authLoading, setAuthLoading] = useState(true);
   const loginAttempted = useRef(false);
 
+  // Dynamic aspect ratio trackers for photos and videos to fit normal mobile views without crop
+  const [imageAspects, setImageAspects] = useState({});
+  const [videoAspects, setVideoAspects] = useState({});
+
+  const handleImageLoad = (id, event) => {
+    const { naturalWidth, naturalHeight } = event.target;
+    if (naturalWidth && naturalHeight) {
+      setImageAspects(prev => ({ ...prev, [id]: naturalWidth / naturalHeight }));
+    }
+  };
+
+  const handleVideoMetadata = (id, event) => {
+    const { videoWidth, videoHeight } = event.target;
+    if (videoWidth && videoHeight) {
+      setVideoAspects(prev => ({ ...prev, [id]: videoWidth / videoHeight }));
+    }
+  };
+
   // Redirect if not logged in as client, but bypass login with auto-login for guests/users with event ID
   useEffect(() => {
     let active = true;
@@ -462,7 +480,8 @@ export default function ClientDashboard() {
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                gap: '1.5rem'
+                gap: '1.5rem',
+                alignItems: 'start'
               }}>
                 {filteredPhotos.map((photo) => (
                   <div 
@@ -472,14 +491,18 @@ export default function ClientDashboard() {
                       borderRadius: 'var(--radius-md)',
                       overflow: 'hidden',
                       position: 'relative',
-                      height: '320px',
+                      height: 'auto',
+                      aspectRatio: imageAspects[photo.id] || '3/2',
                       backgroundColor: '#0a0a0a',
-                      border: '1px solid rgba(255, 255, 255, 0.03)'
+                      border: '1px solid rgba(255, 255, 255, 0.03)',
+                      display: 'flex',
+                      flexDirection: 'column'
                     }}
                   >
                     <img 
                       src={photo.url} 
                       alt="Event Shoot" 
+                      onLoad={(e) => handleImageLoad(photo.id, e)}
                       style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
                       onClick={() => setPreviewPhoto(photo)}
                     />
@@ -570,21 +593,53 @@ export default function ClientDashboard() {
                   }
                 `}} />
                 {event.videos.map((vid) => (
-                  <div key={vid.id} className="glass-panel" style={{ padding: '1rem', backgroundColor: 'rgba(13,13,13,0.4)', borderRadius: 'var(--radius-lg)' }}>
-                    <div style={{ position: 'relative', borderRadius: '8px', overflow: 'hidden', height: '260px', backgroundColor: '#000' }}>
+                  <div key={vid.id} className="glass-panel" style={{ padding: '1rem', backgroundColor: 'rgba(13,13,13,0.4)', borderRadius: 'var(--radius-lg)', maxWidth: '100%', margin: '0 auto' }}>
+                    <div style={{ 
+                      position: 'relative', 
+                      borderRadius: '8px', 
+                      overflow: 'hidden', 
+                      aspectRatio: videoAspects[vid.id] || '16/9',
+                      height: 'auto',
+                      maxHeight: '65vh',
+                      backgroundColor: '#000',
+                      margin: '0 auto',
+                      width: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}>
                       <video 
                         src={vid.url} 
                         controls 
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        onLoadedMetadata={(e) => handleVideoMetadata(vid.id, e)}
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                       />
-                      <span style={{ position: 'absolute', right: '0.75rem', bottom: '0.75rem', backgroundColor: 'rgba(0,0,0,0.8)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '700', color: 'var(--gold-primary)' }}>
+                      <span style={{ position: 'absolute', right: '0.75rem', bottom: '0.75rem', backgroundColor: 'rgba(0,0,0,0.8)', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '700', color: 'var(--gold-primary)', zIndex: 5 }}>
                         {vid.duration}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
-                      <div>
-                        <h4 style={{ fontSize: '1rem', color: 'var(--text-primary)', fontWeight: '600' }}>{vid.title}</h4>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Uploaded: {vid.timestamp}</span>
+                    <div style={{ 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      marginTop: '1rem',
+                      gap: '1rem',
+                      width: '100%'
+                    }}>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <h4 style={{ 
+                          fontSize: '0.95rem', 
+                          color: 'var(--text-primary)', 
+                          fontWeight: '600',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis'
+                        }} title={vid.title}>
+                          {vid.title}
+                        </h4>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginTop: '2px' }}>
+                          Uploaded: {vid.timestamp}
+                        </span>
                       </div>
                       <a 
                         href={vid.url} 
@@ -592,10 +647,19 @@ export default function ClientDashboard() {
                         target="_blank"
                         rel="noreferrer"
                         className="btn btn-outline" 
-                        style={{ padding: '0.4rem 1rem', fontSize: '0.75rem', borderRadius: '4px' }}
+                        style={{ 
+                          padding: '0.4rem 0.8rem', 
+                          fontSize: '0.75rem', 
+                          borderRadius: '4px',
+                          flexShrink: 0,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.4rem',
+                          whiteSpace: 'nowrap'
+                        }}
                       >
                         <Download size={12} />
-                        <span>Download Stream</span>
+                        <span>Download</span>
                       </a>
                     </div>
                   </div>
@@ -620,7 +684,8 @@ export default function ClientDashboard() {
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                gap: '1.5rem'
+                gap: '1.5rem',
+                alignItems: 'start'
               }}>
                 {favoritePhotos.map((photo) => (
                   <div 
@@ -630,14 +695,18 @@ export default function ClientDashboard() {
                       borderRadius: 'var(--radius-md)',
                       overflow: 'hidden',
                       position: 'relative',
-                      height: '320px',
+                      height: 'auto',
+                      aspectRatio: imageAspects[photo.id] || '3/2',
                       backgroundColor: '#0a0a0a',
-                      border: '1px solid rgba(255, 255, 255, 0.03)'
+                      border: '1px solid rgba(255, 255, 255, 0.03)',
+                      display: 'flex',
+                      flexDirection: 'column'
                     }}
                   >
                     <img 
                       src={photo.url} 
                       alt="Favorite" 
+                      onLoad={(e) => handleImageLoad(photo.id, e)}
                       style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
                       onClick={() => setPreviewPhoto(photo)}
                     />

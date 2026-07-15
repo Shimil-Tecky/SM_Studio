@@ -329,24 +329,6 @@ export default function ClientLogin() {
             Credentials
           </button>
           <button 
-            onClick={() => setActiveTab('email')}
-            style={{
-              flex: 1,
-              background: 'none',
-              border: 'none',
-              borderBottom: activeTab === 'email' ? '2px solid var(--gold-primary)' : '2px solid transparent',
-              color: activeTab === 'email' ? 'var(--gold-primary)' : 'var(--text-secondary)',
-              paddingBottom: '0.75rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              fontSize: '0.8rem',
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
-            }}
-          >
-            Gmail Login
-          </button>
-          <button 
             onClick={() => setActiveTab('qrScan')}
             style={{
               flex: 1,
@@ -398,29 +380,7 @@ export default function ClientLogin() {
           </div>
         )}
 
-        {activeTab === 'email' ? (
-          <form onSubmit={handleEmailSubmit}>
-            <div className="form-group" style={{ marginBottom: '2rem' }}>
-              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <Mail size={12} />
-                <span>Client Gmail</span>
-              </label>
-              <input 
-                type="email" 
-                value={clientEmail}
-                onChange={(e) => setClientEmail(e.target.value)}
-                placeholder="e.g. client@gmail.com"
-                className="form-control"
-                required
-              />
-            </div>
-
-            <button type="submit" className="btn btn-gold" style={{ width: '100%', display: 'flex', justifyContent: 'center', gap: '0.75rem' }}>
-              <ShieldCheck size={18} />
-              <span>Unlock with Gmail</span>
-            </button>
-          </form>
-        ) : activeTab === 'credentials' ? (
+        {activeTab === 'credentials' ? (
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>

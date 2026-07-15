@@ -43,7 +43,7 @@ export default function ClientDashboard() {
     }
   };
 
-  // Redirect if not logged in as client, but bypass login with auto-login for guests/users with event ID
+  // Redirect if not logged in as client/guest, no bypass allowed
   useEffect(() => {
     let active = true;
     const checkAuth = async () => {
@@ -55,18 +55,9 @@ export default function ClientDashboard() {
           return;
         }
 
-        if (loginAttempted.current) return;
-        loginAttempted.current = true;
-
-        // Try automatic login (direct from Supabase or memory state)
-        const res = await loginClientViaQr(eventIdParam);
+        // If not authenticated for this event, redirect to guest sign-in
         if (active) {
-          if (res && res.success) {
-            setAuthLoading(false);
-          } else {
-            // Failed to find the event or login, redirect to login page
-            navigate('/client-login', { replace: true });
-          }
+          navigate(`/guest-login?id=${eventIdParam}`, { replace: true });
         }
       } else {
         // No event ID specified, must be logged in as a client
@@ -82,7 +73,7 @@ export default function ClientDashboard() {
     return () => {
       active = false;
     };
-  }, [user, navigate, searchParams, loginClientViaQr]);
+  }, [user, navigate, searchParams]);
 
   // Find the event for the logged-in client
   const event = events.find(e => e.id.toLowerCase() === user?.eventId?.toLowerCase());

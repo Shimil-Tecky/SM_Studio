@@ -45,6 +45,8 @@ export default function ClientDashboard() {
 
   // Redirect if not logged in as client/guest, no bypass allowed
   useEffect(() => {
+    if (!dataLoaded) return;
+
     let active = true;
     const checkAuth = async () => {
       const eventIdParam = searchParams.get('id');
@@ -73,7 +75,7 @@ export default function ClientDashboard() {
     return () => {
       active = false;
     };
-  }, [user, navigate, searchParams]);
+  }, [user, navigate, searchParams, dataLoaded]);
 
   // Find the event for the logged-in client
   const event = events.find(e => e.id.toLowerCase() === user?.eventId?.toLowerCase());

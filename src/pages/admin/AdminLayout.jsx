@@ -15,13 +15,15 @@ export default function AdminLayout() {
     }
   }, [user, navigate]);
 
-  if (!user) {
+  const isAdmin = user && (user.role === 'Super Admin' || user.role === 'Event Admin' || user.role === 'Editor' || user.role === 'Employee');
+
+  if (!isAdmin) {
     return (
-      <div style={{ padding: '6rem 2rem', textAlign: 'center' }}>
-        <ShieldAlert size={60} color="var(--gold-primary)" style={{ marginBottom: '1.5rem' }} />
-        <h2>Verifying Credentials...</h2>
-        <p style={{ color: 'var(--text-secondary)' }}>You are being redirected to the login panel.</p>
-      </div>
+      <div style={{ 
+        width: '100%', 
+        minHeight: '100vh', 
+        backgroundColor: 'var(--bg-deep)' 
+      }} />
     );
   }
 

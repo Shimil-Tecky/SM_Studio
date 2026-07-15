@@ -334,6 +334,9 @@ export const AppProvider = ({ children }) => {
           // Check if this email is a registered client
           const matchedEvent = events.find(e => e.email && e.email.toLowerCase() === email.toLowerCase());
           
+          const onLoginPage = window.location.pathname === '/client-login' || window.location.pathname === '/guest-login';
+          const isSignInEvent = event === 'SIGNED_IN';
+          
           if (matchedEvent) {
             const clientUser = {
               role: 'client',
@@ -354,11 +357,17 @@ export const AppProvider = ({ children }) => {
             const savedUser = savedUserStr ? JSON.parse(savedUserStr) : null;
             const isAlreadyLoggedIn = savedUser && savedUser.email === email && savedUser.eventId === matchedEvent.id;
 
-            if (!isAlreadyLoggedIn || !onCorrectDashboard) {
+            // Silently sync user state without loops
+            if (!isAlreadyLoggedIn) {
               setUser(clientUser);
               sessionStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
-              addNotification("Google Login", `Logged in as client for ${matchedEvent.name}`, "success");
-              
+            }
+
+            // Only notify and redirect if they are on a login page or it's a SIGNED_IN event
+            if (onLoginPage || isSignInEvent) {
+              if (!isAlreadyLoggedIn) {
+                addNotification("Google Login", `Logged in as client for ${matchedEvent.name}`, "success");
+              }
               if (!onCorrectDashboard) {
                 setTimeout(() => {
                   window.location.href = window.location.origin + '/client-dashboard?id=' + matchedEvent.id;
@@ -392,17 +401,23 @@ export const AppProvider = ({ children }) => {
               setUser(guestUser);
               sessionStorage.setItem('antigravity_current_user', JSON.stringify(guestUser));
               localStorage.removeItem('google_auth_target_event_id');
-              addNotification("Google Login", `Logged in as guest for ${matchedEventGuest?.name || 'Gallery'}`, "success");
               
-              // Only redirect if we are not already on the correct dashboard page with the correct event id
-              const searchParams = new URLSearchParams(window.location.search);
-              const currentId = searchParams.get('id') || '';
-              const onCorrectDashboard = window.location.pathname === '/client-dashboard' && currentId.toLowerCase() === targetEventId.toLowerCase();
+              const onLoginPage = window.location.pathname === '/client-login' || window.location.pathname === '/guest-login';
+              const isSignInEvent = event === 'SIGNED_IN';
               
-              if (!onCorrectDashboard) {
-                setTimeout(() => {
-                  window.location.href = window.location.origin + '/client-dashboard?id=' + targetEventId;
-                }, 500);
+              if (onLoginPage || isSignInEvent) {
+                addNotification("Google Login", `Logged in as guest for ${matchedEventGuest?.name || 'Gallery'}`, "success");
+                
+                // Only redirect if we are not already on the correct dashboard page with the correct event id
+                const searchParams = new URLSearchParams(window.location.search);
+                const currentId = searchParams.get('id') || '';
+                const onCorrectDashboard = window.location.pathname === '/client-dashboard' && currentId.toLowerCase() === targetEventId.toLowerCase();
+                
+                if (!onCorrectDashboard) {
+                  setTimeout(() => {
+                    window.location.href = window.location.origin + '/client-dashboard?id=' + targetEventId;
+                  }, 500);
+                }
               }
             }
           }

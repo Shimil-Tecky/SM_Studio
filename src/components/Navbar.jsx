@@ -189,7 +189,35 @@ export default function Navbar() {
           .mobile-menu { display: none !important; }
         }
       `}} />
-        <Link to="/" style={getBubbleStyle('/')} className="nav-bubble">Home</Link>
+        {isGalleryPage ? (
+          <button 
+            onClick={handleLogout}
+            style={{
+              fontSize: '0.85rem',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              background: 'rgba(220, 38, 38, 0.15)',
+              border: '1px solid rgba(220, 38, 38, 0.4)',
+              color: '#ef4444',
+              borderRadius: '50px',
+              padding: '0.55rem 1.3rem',
+              cursor: 'pointer',
+              transition: 'var(--transition-smooth)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              boxShadow: '0 4px 15px rgba(220, 38, 38, 0.15)',
+              outline: 'none'
+            }}
+            className="nav-bubble logout-btn"
+          >
+            <LogOut size={14} />
+            <span>Exit</span>
+          </button>
+        ) : (
+          <Link to="/" style={getBubbleStyle('/')} className="nav-bubble">Home</Link>
+        )}
         {!isGalleryPage && (
           <>
             <Link to="/portfolio" style={getBubbleStyle('/portfolio')} className="nav-bubble">Portfolio</Link>
@@ -353,15 +381,39 @@ export default function Navbar() {
         </button>
       )}
 
-      {/* For gallery page on mobile, show the Home button directly in place of the toggle */}
+      {/* For gallery page on mobile, show the Exit button directly in place of the toggle */}
       {isGalleryPage && (
-        <div className="mobile-only-home" style={{ display: 'none' }}>
+        <div className="mobile-only-exit" style={{ display: 'none' }}>
           <style dangerouslySetInnerHTML={{__html: `
             @media (max-width: 850px) {
-              .mobile-only-home { display: flex !important; }
+              .mobile-only-exit { display: flex !important; }
             }
           `}} />
-          <Link to="/" style={getBubbleStyle('/')} className="nav-bubble">Home</Link>
+          <button 
+            onClick={handleLogout}
+            style={{
+              fontSize: '0.85rem',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              background: 'rgba(220, 38, 38, 0.15)',
+              border: '1px solid rgba(220, 38, 38, 0.4)',
+              color: '#ef4444',
+              borderRadius: '50px',
+              padding: '0.55rem 1.3rem',
+              cursor: 'pointer',
+              transition: 'var(--transition-smooth)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              boxShadow: '0 4px 15px rgba(220, 38, 38, 0.15)',
+              outline: 'none'
+            }}
+            className="nav-bubble logout-btn"
+          >
+            <LogOut size={14} />
+            <span>Exit</span>
+          </button>
         </div>
       )}
 

@@ -27,13 +27,20 @@ export default function GuestLogin() {
   }, [user, navigate, selectedEventId]);
 
   const handleGoogleClick = async () => {
-    if (!selectedEventId || !matchedEvent) {
-      setError('Please select or enter a valid Event ID to continue.');
-      return;
+    let targetId = selectedEventId;
+    if (!targetId) {
+      const activeEvent = events.find(e => e.status === 'Active');
+      if (activeEvent) {
+        targetId = activeEvent.id;
+      } else if (events.length > 0) {
+        targetId = events[0].id;
+      } else {
+        targetId = 'EVE01';
+      }
     }
     try {
       setError('');
-      await loginWithGoogleReal(selectedEventId);
+      await loginWithGoogleReal(targetId);
     } catch (err) {
       console.warn("Real Google OAuth failed, falling back to mock chooser modal:", err.message);
       setIsGoogleModalOpen(true);
@@ -45,11 +52,25 @@ export default function GuestLogin() {
     setError('');
     setSuccess('');
     
+    let targetId = selectedEventId;
+    if (!targetId) {
+      const activeEvent = events.find(e => e.status === 'Active');
+      if (activeEvent) {
+        targetId = activeEvent.id;
+      } else if (events.length > 0) {
+        targetId = events[0].id;
+      } else {
+        targetId = 'EVE01';
+      }
+    }
+    
+    const matched = events.find(e => e.id.toLowerCase() === targetId.toLowerCase());
+    
     try {
       const guestPayload = {
         name: googleUser.name,
         email: googleUser.email,
-        eventId: selectedEventId,
+        eventId: targetId,
         authProvider: 'Google'
       };
 
@@ -60,8 +81,8 @@ export default function GuestLogin() {
       const registeredUser = {
         role: 'client', // Map role to client to let them view client dashboard
         isGuest: false, // Set isGuest to false so they are recognized as signed in
-        eventId: selectedEventId,
-        eventName: matchedEvent?.name || 'Event Gallery',
+        eventId: targetId,
+        eventName: matched?.name || 'Event Gallery',
         clientName: googleUser.name,
         email: googleUser.email
       };
@@ -73,7 +94,7 @@ export default function GuestLogin() {
       setSuccess(`Signed in successfully as ${googleUser.name}! Opening gallery...`);
 
       setTimeout(() => {
-        navigate(`/client-dashboard?id=${selectedEventId}`, { replace: true });
+        navigate(`/client-dashboard?id=${targetId}`, { replace: true });
       }, 1500);
     } catch (err) {
       setError("Failed to register guest details. Please try again.");
@@ -132,44 +153,7 @@ export default function GuestLogin() {
           <div style={{ width: '40px', height: '1.5px', backgroundColor: 'var(--gold-primary)', margin: '0.75rem auto 0' }}></div>
         </div>
 
-        {!urlEventId && (
-          <div className="form-group" style={{ marginBottom: '2rem', textAlign: 'left' }}>
-            <label className="form-label" style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-primary)', fontSize: '0.85rem' }}>
-              Select Active Event
-            </label>
-            <select 
-              className="form-control form-select"
-              value={selectedEventId}
-              onChange={(e) => {
-                setSelectedEventId(e.target.value);
-                setError('');
-              }}
-              style={{ marginBottom: '1rem', width: '100%' }}
-            >
-              <option value="">-- Choose an active event --</option>
-              {events.filter(e => e.status === 'Active').map(evt => (
-                <option key={evt.id} value={evt.id}>
-                  {evt.name} ({evt.id})
-                </option>
-              ))}
-            </select>
-            
-            <label className="form-label" style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-primary)', fontSize: '0.85rem' }}>
-              Or Enter Event ID Manually
-            </label>
-            <input 
-              type="text"
-              placeholder="e.g. ROYAL-2026"
-              className="form-control"
-              value={selectedEventId}
-              onChange={(e) => {
-                setSelectedEventId(e.target.value);
-                setError('');
-              }}
-              style={{ width: '100%' }}
-            />
-          </div>
-        )}
+
 
         {error && (
           <div style={{

@@ -219,197 +219,127 @@ export default function Navbar() {
           .mobile-menu { display: none !important; }
         }
       `}} />
-        {isGalleryPage ? (
-          <button 
-            onClick={handleLogout}
-            style={{
+        <Link to="/" style={getBubbleStyle('/')} className="nav-bubble">Home</Link>
+        <Link to="/portfolio" style={getBubbleStyle('/portfolio')} className="nav-bubble">Portfolio</Link>
+        <Link to="/events" style={getBubbleStyle('/events')} className="nav-bubble">Events</Link>
+        
+        {user && user.role === 'client' ? (
+          <>
+            {isClientApproved && (
+              <Link to="/client-dashboard" style={getBubbleStyle('/client-dashboard')} className="nav-bubble">Client Portal</Link>
+            )}
+            
+            <button 
+              onClick={() => setProfileSidebarOpen(true)}
+              style={{
+                background: 'none',
+                border: 'none',
+                padding: 0,
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                outline: 'none',
+                marginLeft: '0.5rem'
+              }}
+            >
+              <img 
+                src={user.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"} 
+                alt={user.clientName || user.username}
+                style={{
+                  width: '38px',
+                  height: '38px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '1.5px solid var(--gold-primary)',
+                  boxShadow: 'var(--gold-glow)'
+                }}
+              />
+            </button>
+          </>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <Link to="/guest-login" className="nav-bubble-gold" style={{
               fontSize: '0.85rem',
               fontWeight: '600',
               textTransform: 'uppercase',
               letterSpacing: '1px',
-              background: 'rgba(220, 38, 38, 0.15)',
-              border: '1px solid rgba(220, 38, 38, 0.4)',
-              color: '#ef4444',
+              background: 'var(--gold-gradient)',
+              border: '1px solid var(--gold-primary)',
               borderRadius: '50px',
               padding: '0.55rem 1.3rem',
-              cursor: 'pointer',
+              color: 'var(--bg-deep)',
+              boxShadow: 'var(--gold-glow)',
               transition: 'var(--transition-smooth)',
               display: 'inline-flex',
               alignItems: 'center',
               gap: '0.5rem',
-              boxShadow: '0 4px 15px rgba(220, 38, 38, 0.15)',
-              outline: 'none'
-            }}
-            className="nav-bubble logout-btn"
-          >
-            <LogOut size={14} />
-            <span>Exit</span>
-          </button>
-        ) : (
-          <Link to="/" style={getBubbleStyle('/')} className="nav-bubble">Home</Link>
+              cursor: 'pointer',
+              textDecoration: 'none'
+            }}>
+              <LogIn size={14} />
+              <span>Guest Login</span>
+            </Link>
+          </div>
         )}
-        {!isGalleryPage && (
-          <>
-            <Link to="/portfolio" style={getBubbleStyle('/portfolio')} className="nav-bubble">Portfolio</Link>
-            <Link to="/events" style={getBubbleStyle('/events')} className="nav-bubble">Events</Link>
-            
-            {user && user.role === 'client' ? (
-              <>
-                {isClientApproved && (
-                  <Link to="/client-dashboard" style={getBubbleStyle('/client-dashboard')} className="nav-bubble">Client Portal</Link>
-                )}
-                
-                <button 
-                  onClick={() => setProfileSidebarOpen(true)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    padding: 0,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    outline: 'none',
-                    marginLeft: '0.5rem'
-                  }}
-                >
-                  <img 
-                    src={user.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"} 
-                    alt={user.clientName || user.username}
-                    style={{
-                      width: '38px',
-                      height: '38px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '1.5px solid var(--gold-primary)',
-                      boxShadow: 'var(--gold-glow)'
-                    }}
-                  />
-                </button>
-              </>
-            ) : (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <Link to="/guest-login" className="nav-bubble-gold" style={{
-                  fontSize: '0.85rem',
-                  fontWeight: '600',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px',
-                  background: 'var(--gold-gradient)',
-                  border: '1px solid var(--gold-primary)',
-                  borderRadius: '50px',
-                  padding: '0.55rem 1.3rem',
-                  color: 'var(--bg-deep)',
-                  boxShadow: 'var(--gold-glow)',
-                  transition: 'var(--transition-smooth)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  cursor: 'pointer',
-                  textDecoration: 'none'
-                }}>
-                  <LogIn size={14} />
-                  <span>Guest Login</span>
-                </Link>
-              </div>
-            )}
 
-            {/* Mini Light Mode Toggle (On/Off Switch) */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: '0.5rem' }} title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}>
-              <span style={{ fontSize: '0.75rem', opacity: theme === 'light' ? 0.4 : 1, transition: 'opacity 0.3s ease' }}>🌙</span>
-              <button
-                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-                style={{
-                  width: '40px',
-                  height: '22px',
-                  borderRadius: '50px',
-                  backgroundColor: theme === 'light' ? 'var(--gold-primary)' : 'rgba(255,255,255,0.12)',
-                  border: '1px solid var(--nav-border)',
-                  position: 'relative',
-                  cursor: 'pointer',
-                  outline: 'none',
-                  padding: 0,
-                  transition: 'background-color 0.3s ease',
-                  display: 'flex',
-                  alignItems: 'center'
-                }}
-              >
-                <div style={{
-                  width: '16px',
-                  height: '16px',
-                  borderRadius: '50%',
-                  backgroundColor: theme === 'light' ? '#000' : 'var(--gold-primary)',
-                  position: 'absolute',
-                  top: '2px',
-                  left: theme === 'light' ? '20px' : '2px',
-                  transition: 'left 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease',
-                  boxShadow: '0 2px 4px rgba(0,0,0,0.25)'
-                }} />
-              </button>
-              <span style={{ fontSize: '0.75rem', opacity: theme === 'light' ? 1 : 0.4, transition: 'opacity 0.3s ease' }}>☀️</span>
-            </div>
-          </>
-        )}
+        {/* Mini Light Mode Toggle (On/Off Switch) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: '0.5rem' }} title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}>
+          <span style={{ fontSize: '0.75rem', opacity: theme === 'light' ? 0.4 : 1, transition: 'opacity 0.3s ease' }}>🌙</span>
+          <button
+            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+            style={{
+              width: '40px',
+              height: '22px',
+              borderRadius: '50px',
+              backgroundColor: theme === 'light' ? 'var(--gold-primary)' : 'rgba(255,255,255,0.12)',
+              border: '1px solid var(--nav-border)',
+              position: 'relative',
+              cursor: 'pointer',
+              outline: 'none',
+              padding: 0,
+              transition: 'background-color 0.3s ease',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            <div style={{
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              backgroundColor: theme === 'light' ? '#000' : 'var(--gold-primary)',
+              position: 'absolute',
+              top: '2px',
+              left: theme === 'light' ? '20px' : '2px',
+              transition: 'left 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.25)'
+            }} />
+          </button>
+          <span style={{ fontSize: '0.75rem', opacity: theme === 'light' ? 1 : 0.4, transition: 'opacity 0.3s ease' }}>☀️</span>
+        </div>
       </div>
 
       {/* Mobile Menu Toggle — always rendered, shown via CSS at ≤850px */}
-      {!isGalleryPage && (
-        <button className="mobile-nav-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{
-          background: 'var(--nav-bg)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          border: '1px solid var(--gold-primary)',
-          borderRadius: '50%',
-          width: '42px',
-          height: '42px',
-          minWidth: '42px',
-          display: 'none',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'var(--gold-primary)',
-          cursor: 'pointer',
-          boxShadow: '0 0 12px rgba(212,175,55,0.25)',
-          transition: 'var(--transition-smooth)',
-          padding: 0,
-          flexShrink: 0
-        }}>
-          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
-      )}
-
-      {/* For gallery page on mobile, show the Exit button directly in place of the toggle */}
-      {isGalleryPage && (
-        <div className="mobile-only-exit" style={{ display: 'none' }}>
-          <style dangerouslySetInnerHTML={{__html: `
-            @media (max-width: 850px) {
-              .mobile-only-exit { display: flex !important; }
-            }
-          `}} />
-          <button 
-            onClick={handleLogout}
-            style={{
-              fontSize: '0.85rem',
-              fontWeight: '600',
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              background: 'rgba(220, 38, 38, 0.15)',
-              border: '1px solid rgba(220, 38, 38, 0.4)',
-              color: '#ef4444',
-              borderRadius: '50px',
-              padding: '0.55rem 1.3rem',
-              cursor: 'pointer',
-              transition: 'var(--transition-smooth)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              boxShadow: '0 4px 15px rgba(220, 38, 38, 0.15)',
-              outline: 'none'
-            }}
-            className="nav-bubble logout-btn"
-          >
-            <LogOut size={14} />
-            <span>Exit</span>
-          </button>
-        </div>
-      )}
+      <button className="mobile-nav-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{
+        background: 'var(--nav-bg)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        border: '1px solid var(--gold-primary)',
+        borderRadius: '50%',
+        width: '42px',
+        height: '42px',
+        minWidth: '42px',
+        display: 'none',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'var(--gold-primary)',
+        cursor: 'pointer',
+        boxShadow: '0 0 12px rgba(212,175,55,0.25)',
+        transition: 'var(--transition-smooth)',
+        padding: 0,
+        flexShrink: 0
+      }}>
+        {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+      </button>
 
       {/* Mobile Menu Panel */}
       {mobileMenuOpen && (

@@ -343,13 +343,28 @@ export const AppProvider = ({ children }) => {
               clientName: matchedEvent.clientName,
               email: email
             };
-            setUser(clientUser);
-            sessionStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
-            addNotification("Google Login", `Logged in as client for ${matchedEvent.name}`, "success");
-            // Redirect using window.location.href
-            setTimeout(() => {
-              window.location.href = window.location.origin + '/client-dashboard?id=' + matchedEvent.id;
-            }, 500);
+            
+            // Check if we are already on the client dashboard page with the correct event id
+            const searchParams = new URLSearchParams(window.location.search);
+            const currentId = searchParams.get('id') || '';
+            const onCorrectDashboard = window.location.pathname === '/client-dashboard' && currentId.toLowerCase() === matchedEvent.id.toLowerCase();
+            
+            // Get current saved user to see if it matches
+            const savedUserStr = sessionStorage.getItem('antigravity_current_user');
+            const savedUser = savedUserStr ? JSON.parse(savedUserStr) : null;
+            const isAlreadyLoggedIn = savedUser && savedUser.email === email && savedUser.eventId === matchedEvent.id;
+
+            if (!isAlreadyLoggedIn || !onCorrectDashboard) {
+              setUser(clientUser);
+              sessionStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
+              addNotification("Google Login", `Logged in as client for ${matchedEvent.name}`, "success");
+              
+              if (!onCorrectDashboard) {
+                setTimeout(() => {
+                  window.location.href = window.location.origin + '/client-dashboard?id=' + matchedEvent.id;
+                }, 500);
+              }
+            }
           } else {
             // Check if there is a target guest event id in localStorage
             const targetEventId = localStorage.getItem('google_auth_target_event_id');
@@ -373,14 +388,22 @@ export const AppProvider = ({ children }) => {
                 clientName: name,
                 email: email
               };
+              
               setUser(guestUser);
               sessionStorage.setItem('antigravity_current_user', JSON.stringify(guestUser));
               localStorage.removeItem('google_auth_target_event_id');
               addNotification("Google Login", `Logged in as guest for ${matchedEventGuest?.name || 'Gallery'}`, "success");
-              // Redirect using window.location.href
-              setTimeout(() => {
-                window.location.href = window.location.origin + '/client-dashboard?id=' + targetEventId;
-              }, 500);
+              
+              // Only redirect if we are not already on the correct dashboard page with the correct event id
+              const searchParams = new URLSearchParams(window.location.search);
+              const currentId = searchParams.get('id') || '';
+              const onCorrectDashboard = window.location.pathname === '/client-dashboard' && currentId.toLowerCase() === targetEventId.toLowerCase();
+              
+              if (!onCorrectDashboard) {
+                setTimeout(() => {
+                  window.location.href = window.location.origin + '/client-dashboard?id=' + targetEventId;
+                }, 500);
+              }
             }
           }
         }

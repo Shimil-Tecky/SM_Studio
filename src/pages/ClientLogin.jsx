@@ -56,7 +56,7 @@ export default function ClientLogin() {
       if (addNotification) {
         addNotification("Access Granted", `Successfully authenticated via Google for event "${matchedEvent.name}"`, "success");
       }
-      navigate('/client-dashboard', { replace: true });
+      navigate('/', { replace: true });
     } else {
       setError('Access Denied: This Google Account is not registered as a client for any event. Guests must sign in via the Guest Portal.');
       if (addNotification) {
@@ -68,7 +68,7 @@ export default function ClientLogin() {
   // Redirect if already logged in as client
   useEffect(() => {
     if (user && user.role === 'client') {
-      navigate('/client-dashboard', { replace: true });
+      navigate('/', { replace: true });
     }
   }, [user, navigate]);
 
@@ -91,7 +91,7 @@ export default function ClientLogin() {
         if (result.success) {
           setQrSuccessMessage(`QR Code recognized! Redirecting directly to the gallery...`);
           setTimeout(() => {
-            navigate(`/client-dashboard?id=${qrParam}`, { replace: true });
+            navigate('/', { replace: true });
           }, 1000);
         } else {
           setError(result.message || 'QR Login failed.');
@@ -110,7 +110,7 @@ export default function ClientLogin() {
     
     const result = await loginClient(cleanId, cleanPassword);
     if (result.success) {
-      navigate('/client-dashboard', { replace: true });
+      navigate('/', { replace: true });
     } else {
       setError(result.message);
     }
@@ -123,7 +123,7 @@ export default function ClientLogin() {
     
     const result = await loginClientViaEmail(cleanEmail);
     if (result.success) {
-      navigate(`/client-dashboard?id=${result.user.eventId}`, { replace: true });
+      navigate('/', { replace: true });
     } else {
       setError(result.message);
     }
@@ -151,7 +151,7 @@ export default function ClientLogin() {
     const result = await loginClientViaQr(eventIdVal);
     if (result.success) {
       setTimeout(() => {
-        navigate(`/client-dashboard?id=${eventIdVal}`, { replace: true });
+        navigate('/', { replace: true });
       }, 1500);
     } else {
       setError(result.message || 'QR Login failed.');

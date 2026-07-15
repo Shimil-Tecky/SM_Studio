@@ -88,7 +88,7 @@ export default function GuestLogin() {
       setSuccess(`Signed in successfully as ${googleUser.name}! Opening gallery...`);
 
       setTimeout(() => {
-        navigate(`/client-dashboard?id=${targetId}`, { replace: true });
+        navigate(`/`, { replace: true });
       }, 1500);
     } catch (err) {
       setError("Failed to register guest details. Please try again.");

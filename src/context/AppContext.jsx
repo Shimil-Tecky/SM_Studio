@@ -389,7 +389,7 @@ export const AppProvider = ({ children }) => {
               }
               if (!onCorrectDashboard) {
                 setTimeout(() => {
-                  window.location.href = window.location.origin + '/client-dashboard?id=' + matchedEvent.id;
+                  window.location.href = window.location.origin + '/';
                 }, 500);
               }
             }
@@ -433,7 +433,7 @@ export const AppProvider = ({ children }) => {
                 
                 if (!onCorrectDashboard) {
                   setTimeout(() => {
-                    window.location.href = window.location.origin + '/client-dashboard?id=' + targetEventId;
+                    window.location.href = window.location.origin + '/';
                   }, 500);
                 }
               }

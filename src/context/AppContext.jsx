@@ -353,7 +353,7 @@ export const AppProvider = ({ children }) => {
           // Check if this email is a registered client
           const matchedEvent = events.find(e => e.email && e.email.toLowerCase() === email.toLowerCase());
           
-          const onLoginPage = window.location.pathname === '/client-login' || window.location.pathname === '/guest-login';
+          const onLoginPage = window.location.pathname === '/client-login';
           const isSignInEvent = event === 'SIGNED_IN';
           
           if (matchedEvent) {
@@ -421,7 +421,7 @@ export const AppProvider = ({ children }) => {
               localStorage.setItem('antigravity_current_user', JSON.stringify(guestUser));
               localStorage.removeItem('google_auth_target_event_id');
               
-              const onLoginPage = window.location.pathname === '/client-login' || window.location.pathname === '/guest-login';
+              const onLoginPage = window.location.pathname === '/client-login';
               
               if (onLoginPage) {
                 addNotification("Google Login", `Logged in as guest for ${matchedEventGuest?.name || 'Gallery'}`, "success");

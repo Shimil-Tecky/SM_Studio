@@ -223,39 +223,32 @@ export default function Navbar() {
         <Link to="/portfolio" style={getBubbleStyle('/portfolio')} className="nav-bubble">Portfolio</Link>
         <Link to="/events" style={getBubbleStyle('/events')} className="nav-bubble">Events</Link>
         
-        {user && user.role === 'client' ? (
-          <>
-            {isClientApproved && (
-              <Link to="/client-dashboard" style={getBubbleStyle('/client-dashboard')} className="nav-bubble">Client Portal</Link>
-            )}
-            
-            <button 
-              onClick={() => setProfileSidebarOpen(true)}
-              style={{
-                background: 'none',
-                border: 'none',
-                padding: 0,
-                cursor: 'pointer',
-                display: 'inline-flex',
-                alignItems: 'center',
-                outline: 'none',
-                marginLeft: '0.5rem'
-              }}
-            >
-              <img 
-                src={user.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"} 
-                alt={user.clientName || user.username}
-                style={{
-                  width: '38px',
-                  height: '38px',
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  border: '1.5px solid var(--gold-primary)',
-                  boxShadow: 'var(--gold-glow)'
-                }}
-              />
-            </button>
-          </>
+        {isGalleryPage ? (
+          <button 
+            onClick={handleLogout}
+            style={{
+              fontSize: '0.85rem',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              background: 'rgba(220, 38, 38, 0.15)',
+              border: '1px solid rgba(220, 38, 38, 0.4)',
+              color: '#ef4444',
+              borderRadius: '50px',
+              padding: '0.55rem 1.3rem',
+              cursor: 'pointer',
+              transition: 'var(--transition-smooth)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              boxShadow: '0 4px 15px rgba(220, 38, 38, 0.15)',
+              outline: 'none'
+            }}
+            className="nav-bubble logout-btn"
+          >
+            <LogOut size={14} />
+            <span>Sign Out</span>
+          </button>
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <Link to="/guest-login" className="nav-bubble-gold" style={{
@@ -319,27 +312,62 @@ export default function Navbar() {
       </div>
 
       {/* Mobile Menu Toggle — always rendered, shown via CSS at ≤850px */}
-      <button className="mobile-nav-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{
-        background: 'var(--nav-bg)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        border: '1px solid var(--gold-primary)',
-        borderRadius: '50%',
-        width: '42px',
-        height: '42px',
-        minWidth: '42px',
-        display: 'none',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'var(--gold-primary)',
-        cursor: 'pointer',
-        boxShadow: '0 0 12px rgba(212,175,55,0.25)',
-        transition: 'var(--transition-smooth)',
-        padding: 0,
-        flexShrink: 0
-      }}>
-        {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
+      {!isGalleryPage ? (
+        <button className="mobile-nav-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{
+          background: 'var(--nav-bg)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid var(--gold-primary)',
+          borderRadius: '50%',
+          width: '42px',
+          height: '42px',
+          minWidth: '42px',
+          display: 'none',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--gold-primary)',
+          cursor: 'pointer',
+          boxShadow: '0 0 12px rgba(212,175,55,0.25)',
+          transition: 'var(--transition-smooth)',
+          padding: 0,
+          flexShrink: 0
+        }}>
+          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      ) : (
+        <div className="mobile-only-exit" style={{ display: 'none' }}>
+          <style dangerouslySetInnerHTML={{__html: `
+            @media (max-width: 850px) {
+              .mobile-only-exit { display: flex !important; }
+            }
+          `}} />
+          <button 
+            onClick={handleLogout}
+            style={{
+              fontSize: '0.85rem',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              background: 'rgba(220, 38, 38, 0.15)',
+              border: '1px solid rgba(220, 38, 38, 0.4)',
+              color: '#ef4444',
+              borderRadius: '50px',
+              padding: '0.55rem 1.3rem',
+              cursor: 'pointer',
+              transition: 'var(--transition-smooth)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              boxShadow: '0 4px 15px rgba(220, 38, 38, 0.15)',
+              outline: 'none'
+            }}
+            className="nav-bubble logout-btn"
+          >
+            <LogOut size={14} />
+            <span>Sign Out</span>
+          </button>
+        </div>
+      )}
 
       {/* Mobile Menu Panel */}
       {mobileMenuOpen && (
@@ -397,76 +425,27 @@ export default function Navbar() {
             textDecoration: 'none'
           }}>Events</Link>
           
-
-          {user && user.role === 'client' ? (
-            <>
-              {isClientApproved && (
-                <Link to="/client-dashboard" onClick={() => setMobileMenuOpen(false)} className="nav-bubble" style={{
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  color: 'var(--text-primary)',
-                  textTransform: 'uppercase',
-                  background: 'var(--nav-bg)',
-                  border: '1px solid var(--nav-border)',
-                  borderRadius: '50px',
-                  padding: '0.6rem 1.5rem',
-                  textAlign: 'center',
-                  boxShadow: 'var(--nav-shadow)',
-                  textDecoration: 'none'
-                }}>Client Portal</Link>
-              )}
-              {/* Admin Dashboard link removed to prevent exposing admin panel on public page viewports */}
-              
-              <button 
-                onClick={() => { setMobileMenuOpen(false); setProfileSidebarOpen(true); }}
-                style={{
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px',
-                  background: 'var(--gold-gradient)',
-                  border: '1px solid var(--gold-primary)',
-                  color: 'var(--bg-deep)',
-                  borderRadius: '50px',
-                  padding: '0.75rem 1.5rem',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  boxShadow: 'var(--gold-glow)',
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  outline: 'none'
-                }}
-              >
-                <User size={16} />
-                <span>My Account</span>
-              </button>
-            </>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
-              <Link to="/guest-login" onClick={() => setMobileMenuOpen(false)} className="nav-bubble-gold" style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                fontSize: '1rem',
-                fontWeight: '600',
-                textTransform: 'uppercase',
-                background: 'var(--gold-gradient)',
-                border: '1px solid var(--gold-primary)',
-                borderRadius: '50px',
-                padding: '0.6rem 1.5rem',
-                color: 'var(--bg-deep)',
-                boxShadow: 'var(--gold-glow)',
-                textDecoration: 'none'
-              }}>
-                <LogIn size={16} />
-                <span>Guest Login</span>
-              </Link>
-            </div>
-          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
+            <Link to="/guest-login" onClick={() => setMobileMenuOpen(false)} className="nav-bubble-gold" style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              fontSize: '1rem',
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              background: 'var(--gold-gradient)',
+              border: '1px solid var(--gold-primary)',
+              borderRadius: '50px',
+              padding: '0.6rem 1.5rem',
+              color: 'var(--bg-deep)',
+              boxShadow: 'var(--gold-glow)',
+              textDecoration: 'none'
+            }}>
+              <LogIn size={16} />
+              <span>Guest Login</span>
+            </Link>
+          </div>
           
           {/* Mobile Theme Toggle switch */}
           <div style={{

@@ -169,6 +169,7 @@ export const AppProvider = ({ children }) => {
   });
   const [adminAccounts, setAdminAccounts] = useState(INITIAL_ADMIN_ACCOUNTS);
   const [notifications, setNotifications] = useState([]);
+  const [clientRequests, setClientRequests] = useState([]);
   const [dataLoaded, setDataLoaded] = useState(false);
 
   // Fetch initial data (from Supabase if available, otherwise localStorage)
@@ -264,6 +265,11 @@ export const AppProvider = ({ children }) => {
               }))
             );
           }
+
+          // 8. Fetch Client Requests
+          const { data: requestsData } = await supabase.from('client_requests').select('*').order('created_at', { ascending: false });
+          if (requestsData) setClientRequests(requestsData);
+
           setDataLoaded(true);
         } catch (err) {
           console.error("Error loading data from Supabase:", err);

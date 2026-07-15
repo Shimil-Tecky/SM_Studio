@@ -14,7 +14,8 @@ export default function GuestLogin() {
   const [loading, setLoading] = useState(false);
   const [isGoogleModalOpen, setIsGoogleModalOpen] = useState(false);
 
-  const urlEventId = searchParams.get('id') || '';
+  const rawUrlEventId = searchParams.get('id') || '';
+  const urlEventId = (rawUrlEventId === 'undefined' || rawUrlEventId === 'null') ? '' : rawUrlEventId;
   const [selectedEventId, setSelectedEventId] = useState(urlEventId || (user?.eventId) || '');
   const matchedEvent = events.find(e => e.id.toLowerCase() === selectedEventId.toLowerCase());
 

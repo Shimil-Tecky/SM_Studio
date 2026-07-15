@@ -836,7 +836,7 @@ export const AppProvider = ({ children }) => {
     if (supabase) {
       try {
         const { data, error } = await supabase
-          .from('guests')
+          .from('guest_logins')
           .insert([newGuest])
           .select();
           

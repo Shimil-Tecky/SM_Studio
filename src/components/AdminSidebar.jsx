@@ -1,5 +1,5 @@
 import React, { useContext, useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
 import { 
   LayoutDashboard, 
@@ -12,11 +12,13 @@ import {
   FileText,
   Briefcase,
   Edit,
-  UserCheck
+  UserCheck,
+  LogOut
 } from 'lucide-react';
 
 export default function AdminSidebar() {
-  const { user, updateUserProfile } = useContext(AppContext);
+  const { user, updateUserProfile, logout } = useContext(AppContext);
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editUsername, setEditUsername] = useState(user?.username || '');
   const [editLoginUsername, setEditLoginUsername] = useState(user?.loginUsername || '');
@@ -261,6 +263,36 @@ export default function AdminSidebar() {
               </NavLink>
             );
           })}
+
+          <button
+            onClick={async () => {
+              await logout();
+              navigate('/admin/login');
+            }}
+            className="btn"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-start',
+              gap: '0.75rem',
+              padding: '0.8rem 1rem',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '0.9rem',
+              fontWeight: '500',
+              textTransform: 'none',
+              letterSpacing: 'normal',
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              color: '#ef4444',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              cursor: 'pointer',
+              marginTop: '1rem',
+              width: '100%',
+              transition: 'var(--transition-smooth)'
+            }}
+          >
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
         </nav>
       </aside>
 

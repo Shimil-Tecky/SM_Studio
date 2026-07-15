@@ -325,6 +325,19 @@ export const AppProvider = ({ children }) => {
 
   // Sync user login session state locally
   useEffect(() => {
+    try {
+      const localUserStr = localStorage.getItem('antigravity_current_user');
+      if (localUserStr) {
+        const parsed = JSON.parse(localUserStr);
+        if (parsed && parsed.role !== 'client') {
+          // Proactively migrate/remove old admin session from localStorage to sessionStorage
+          localStorage.removeItem('antigravity_current_user');
+          sessionStorage.setItem('antigravity_current_user', JSON.stringify(parsed));
+        }
+      }
+    } catch (e) {
+      console.warn("Session migration check failed:", e);
+    }
     const savedUser = sessionStorage.getItem('antigravity_current_user') || localStorage.getItem('antigravity_current_user');
     if (savedUser) setUser(JSON.parse(savedUser));
   }, []);

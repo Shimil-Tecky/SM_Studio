@@ -23,6 +23,7 @@ import EmployeeManagement from './pages/admin/EmployeeManagement';
 import Settings from './pages/admin/Settings';
 import ContentManagement from './pages/admin/ContentManagement';
 import PortfolioManagement from './pages/admin/PortfolioManagement';
+import ClientRequests from './pages/admin/ClientRequests';
 
 export default function App() {
   return (
@@ -55,6 +56,7 @@ export default function App() {
             <Route path="settings" element={<Settings />} />
             <Route path="content" element={<ContentManagement />} />
             <Route path="portfolio" element={<PortfolioManagement />} />
+            <Route path="requests" element={<ClientRequests />} />
           </Route>
         </Routes>
       </BrowserRouter>

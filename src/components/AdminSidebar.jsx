@@ -11,7 +11,8 @@ import {
   ShieldAlert,
   FileText,
   Briefcase,
-  Edit
+  Edit,
+  UserCheck
 } from 'lucide-react';
 
 export default function AdminSidebar() {
@@ -98,6 +99,7 @@ export default function AdminSidebar() {
     { name: 'Live Sharing', path: '/admin/live-sharing', icon: UploadCloud },
     { name: 'AI Photo Editing', path: '/admin/ai-editing', icon: Sparkles },
     { name: 'Employees', path: '/admin/employees', icon: Users, restricted: ['Editor', 'Employee', 'Event Admin'] },
+    { name: 'Client Requests', path: '/admin/requests', icon: UserCheck, restricted: ['Employee', 'Editor'] },
     { name: 'Settings', path: '/admin/settings', icon: SettingsIcon }
   ];
 

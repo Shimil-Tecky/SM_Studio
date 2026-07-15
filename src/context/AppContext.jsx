@@ -319,7 +319,7 @@ export const AppProvider = ({ children }) => {
 
   // Sync user login session state locally
   useEffect(() => {
-    const savedUser = sessionStorage.getItem('antigravity_current_user');
+    const savedUser = localStorage.getItem('antigravity_current_user');
     if (savedUser) setUser(JSON.parse(savedUser));
   }, []);
 
@@ -353,14 +353,14 @@ export const AppProvider = ({ children }) => {
             const onCorrectDashboard = window.location.pathname === '/client-dashboard' && currentId.toLowerCase() === matchedEvent.id.toLowerCase();
             
             // Get current saved user to see if it matches
-            const savedUserStr = sessionStorage.getItem('antigravity_current_user');
+            const savedUserStr = localStorage.getItem('antigravity_current_user');
             const savedUser = savedUserStr ? JSON.parse(savedUserStr) : null;
             const isAlreadyLoggedIn = savedUser && savedUser.email === email && savedUser.eventId === matchedEvent.id;
 
             // Silently sync user state without loops
             if (!isAlreadyLoggedIn) {
               setUser(clientUser);
-              sessionStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
+              localStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
             }
 
             // Only notify and redirect if they are on a login page or it's a SIGNED_IN event
@@ -399,7 +399,7 @@ export const AppProvider = ({ children }) => {
               };
               
               setUser(guestUser);
-              sessionStorage.setItem('antigravity_current_user', JSON.stringify(guestUser));
+              localStorage.setItem('antigravity_current_user', JSON.stringify(guestUser));
               localStorage.removeItem('google_auth_target_event_id');
               
               const onLoginPage = window.location.pathname === '/client-login' || window.location.pathname === '/guest-login';
@@ -447,9 +447,9 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     try {
       if (user) {
-        sessionStorage.setItem('antigravity_current_user', JSON.stringify(user));
+        localStorage.setItem('antigravity_current_user', JSON.stringify(user));
       } else {
-        sessionStorage.removeItem('antigravity_current_user');
+        localStorage.removeItem('antigravity_current_user');
       }
     } catch (e) {
       console.warn("Storage error: failed to save current user", e);
@@ -763,7 +763,7 @@ export const AppProvider = ({ children }) => {
             email: dbEvent.email
           };
           setUser(clientUser);
-          sessionStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
+          localStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
           addNotification("Welcome Back", `Successfully accessed the gallery for ${dbEvent.name}`, "info");
           return { success: true, user: clientUser };
         }
@@ -785,7 +785,7 @@ export const AppProvider = ({ children }) => {
         email: foundEvent.email
       };
       setUser(clientUser);
-      sessionStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
+      localStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
       addNotification("Welcome Back", `Successfully accessed the gallery for ${foundEvent.name}`, "info");
       return { success: true, user: clientUser };
     }
@@ -1625,6 +1625,139 @@ export const AppProvider = ({ children }) => {
     addNotification("Settings Saved", "System configuration details updated successfully.", "success");
   };
 
+  const fetchClientRequests = async () => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('client_requests')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        setClientRequests(data || []);
+      } catch (err) {
+        console.error("Error fetching client requests:", err);
+      }
+    }
+  };
+
+  const submitClientRequest = async (requestPayload) => {
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('client_requests')
+          .insert([requestPayload])
+          .select();
+        
+        if (error) throw error;
+        
+        await fetchClientRequests();
+        return { success: true, data: data[0] };
+      } catch (err) {
+        console.error("Error submitting client request:", err);
+        return { success: false, message: err.message };
+      }
+    } else {
+      const newReq = {
+        id: Math.floor(Math.random() * 100000),
+        ...requestPayload,
+        status: 'pending',
+        created_at: new Date().toISOString()
+      };
+      setClientRequests(prev => [newReq, ...prev]);
+      return { success: true, data: newReq };
+    }
+  };
+
+  const approveClientRequest = async (requestId, email, eventId) => {
+    if (supabase) {
+      try {
+        const { error: requestErr } = await supabase
+          .from('client_requests')
+          .update({ status: 'approved' })
+          .eq('id', requestId);
+        if (requestErr) throw requestErr;
+
+        const { error: eventErr } = await supabase
+          .from('events')
+          .update({ email: email })
+          .eq('id', eventId);
+        if (eventErr) throw eventErr;
+
+        const { data: eventsData } = await supabase.from('events').select('*');
+        const { data: mediaData } = await supabase.from('event_media').select('*');
+        if (eventsData) {
+          const formattedEvents = eventsData.map(evt => {
+            const eventMedia = mediaData ? mediaData.filter(m => m.event_id === evt.id) : [];
+            return {
+              ...evt,
+              clientName: evt.client_name,
+              coverImage: evt.cover_image,
+              qrCodeUrl: evt.qr_code_url ? evt.qr_code_url
+                .replace(/localhost%3A5173/g, 'sm-studio-delta.vercel.app')
+                .replace(/localhost:5173/g, 'sm-studio-delta.vercel.app')
+                .replace(/127\.0\.0\.1/g, 'sm-studio-delta.vercel.app') : evt.qr_code_url,
+              activeClients: evt.active_clients,
+              photos: eventMedia.filter(m => m.type === 'photo').map(m => ({
+                id: m.id,
+                url: m.url,
+                category: m.category,
+                likes: m.likes || 0,
+                likedByUser: m.liked_by_user || false,
+                tags: m.tags || [],
+                timestamp: m.timestamp
+              })),
+              videos: eventMedia.filter(m => m.type === 'video').map(m => ({
+                id: m.id,
+                title: m.title,
+                url: m.url,
+                duration: m.duration || '0:00',
+                likes: m.likes || 0,
+                likedByUser: m.liked_by_user || false,
+                tags: m.tags || [],
+                timestamp: m.timestamp
+              }))
+            };
+          });
+          setEvents(formattedEvents);
+        }
+
+        await fetchClientRequests();
+        addNotification("Request Approved", `Guest ${email} is now the Client for event ${eventId}`, "success");
+        return { success: true };
+      } catch (err) {
+        console.error("Error approving client request:", err);
+        return { success: false, message: err.message };
+      }
+    } else {
+      setClientRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'approved' } : r));
+      setEvents(prev => prev.map(e => e.id === eventId ? { ...e, email: email } : e));
+      addNotification("Request Approved (Local)", `Guest ${email} is now the Client for event ${eventId}`, "success");
+      return { success: true };
+    }
+  };
+
+  const rejectClientRequest = async (requestId) => {
+    if (supabase) {
+      try {
+        const { error } = await supabase
+          .from('client_requests')
+          .update({ status: 'rejected' })
+          .eq('id', requestId);
+        if (error) throw error;
+        await fetchClientRequests();
+        addNotification("Request Rejected", "The client access request was rejected.", "warning");
+        return { success: true };
+      } catch (err) {
+        console.error("Error rejecting client request:", err);
+        return { success: false, message: err.message };
+      }
+    } else {
+      setClientRequests(prev => prev.map(r => r.id === requestId ? { ...r, status: 'rejected' } : r));
+      addNotification("Request Rejected (Local)", "The client access request was rejected.", "warning");
+      return { success: true };
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       events,
@@ -1666,7 +1799,12 @@ export const AppProvider = ({ children }) => {
       addActivityLog,
       updateUserProfile,
       theme,
-      setTheme
+      setTheme,
+      clientRequests,
+      submitClientRequest,
+      approveClientRequest,
+      rejectClientRequest,
+      fetchClientRequests
     }}>
       {children}
     </AppContext.Provider>

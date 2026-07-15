@@ -1,13 +1,17 @@
 import React, { useContext, useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AppContext } from '../context/AppContext';
-import { Camera, LogOut, LogIn, User, Shield, Menu, X, Globe, ArrowLeft } from 'lucide-react';
+import { Camera, LogOut, LogIn, User, Shield, Menu, X, Globe, ArrowLeft, Send, Check } from 'lucide-react';
 
 export default function Navbar() {
-  const { user, logout, theme, setTheme } = useContext(AppContext);
+  const { user, logout, theme, setTheme, events, clientRequests, submitClientRequest, addNotification } = useContext(AppContext);
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileSidebarOpen, setProfileSidebarOpen] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState('');
+  const [requestMessage, setRequestMessage] = useState('');
+  const [submittingRequest, setSubmittingRequest] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -22,6 +26,32 @@ export default function Navbar() {
       setMobileMenuOpen(false);
     } else {
       handleLogout();
+    }
+  };
+
+  const isClientApproved = user && events && events.some(e => e.email && e.email.toLowerCase() === user.email.toLowerCase());
+
+  const myRequests = (clientRequests || []).filter(r => r.guest_email && r.guest_email.toLowerCase() === user?.email?.toLowerCase());
+
+  const handleRequestSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedEventId) return;
+    setSubmittingRequest(true);
+    const payload = {
+      guest_name: user.clientName || user.username || 'Google Guest',
+      guest_email: user.email,
+      event_id: selectedEventId,
+      message: requestMessage,
+      status: 'pending'
+    };
+    const res = await submitClientRequest(payload);
+    setSubmittingRequest(false);
+    if (res.success) {
+      addNotification("Request Sent", "Your request to access the event as client has been sent to admins.", "success");
+      setRequestMessage('');
+      setSelectedEventId('');
+    } else {
+      addNotification("Request Failed", res.message || "Failed to submit request", "error");
     }
   };
 
@@ -225,76 +255,42 @@ export default function Navbar() {
             
             {user ? (
               <>
-                {user.role === 'client' ? (
-                  <Link to="/client-dashboard" style={getBubbleStyle('/client-dashboard')} className="nav-bubble">{user.isGuest ? 'Event Gallery' : 'Client Portal'}</Link>
-                ) : (
+                {isClientApproved && (
+                  <Link to="/client-dashboard" style={getBubbleStyle('/client-dashboard')} className="nav-bubble">Client Portal</Link>
+                )}
+                {user.role !== 'client' && (
                   <Link to="/admin" style={getBubbleStyle('/admin')} className="nav-bubble">Admin Dashboard</Link>
                 )}
                 
-                <div style={{
-                  background: 'var(--nav-bg)',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
-                  border: '1px solid var(--nav-border)',
-                  borderRadius: '50px',
-                  padding: '0.4rem 1.25rem',
-                  boxShadow: 'var(--nav-shadow)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '1rem'
-                }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                    {(!user.isGuest || user.role !== 'client') && (
-                      <span style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-primary)' }}>
-                        {user.role === 'client' ? user.clientName : user.username}
-                      </span>
-                    )}
-                    <span style={{ fontSize: '0.65rem', color: 'var(--gold-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      {user.role === 'client' ? (user.isGuest ? 'guest' : 'client') : user.role}
-                    </span>
-                  </div>
-                  <button onClick={handleAuthClick} style={{
-                    background: user.isGuest ? 'rgba(212, 175, 55, 0.15)' : 'rgba(220, 38, 38, 0.15)',
-                    border: user.isGuest ? '1px solid rgba(212, 175, 55, 0.4)' : '1px solid rgba(220, 38, 38, 0.4)',
-                    color: user.isGuest ? 'var(--gold-primary)' : '#ef4444',
-                    padding: '0.3rem 0.75rem',
-                    fontSize: '0.75rem',
-                    borderRadius: '50px',
+                <button 
+                  onClick={() => setProfileSidebarOpen(true)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    padding: 0,
                     cursor: 'pointer',
-                    display: 'flex',
+                    display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '0.4rem',
-                    transition: 'var(--transition-smooth)'
-                  }} className={user.isGuest ? "signin-btn" : "logout-btn"}>
-                    {user.isGuest ? <LogIn size={12} /> : <LogOut size={12} />}
-                    <span>{user.isGuest ? 'Sign In' : 'Logout'}</span>
-                  </button>
-                </div>
+                    outline: 'none',
+                    marginLeft: '0.5rem'
+                  }}
+                >
+                  <img 
+                    src={user.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"} 
+                    alt={user.clientName || user.username}
+                    style={{
+                      width: '38px',
+                      height: '38px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '1.5px solid var(--gold-primary)',
+                      boxShadow: 'var(--gold-glow)'
+                    }}
+                  />
+                </button>
               </>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <Link to="/client-login" className="nav-bubble" style={{
-                  fontSize: '0.85rem',
-                  fontWeight: '600',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px',
-                  background: 'var(--nav-bg)',
-                  backdropFilter: 'blur(10px)',
-                  WebkitBackdropFilter: 'blur(10px)',
-                  border: '1px solid var(--nav-border)',
-                  borderRadius: '50px',
-                  padding: '0.55rem 1.3rem',
-                  color: 'var(--text-secondary)',
-                  boxShadow: 'var(--nav-shadow)',
-                  transition: 'var(--transition-smooth)',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  cursor: 'pointer'
-                }}>
-                  <User size={14} />
-                  <span>Client Portal</span>
-                </Link>
                 <Link to="/guest-login" className="nav-bubble-gold" style={{
                   fontSize: '0.85rem',
                   fontWeight: '600',
@@ -310,7 +306,8 @@ export default function Navbar() {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: '0.5rem',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  textDecoration: 'none'
                 }}>
                   <LogIn size={14} />
                   <span>Guest Login</span>
@@ -476,7 +473,7 @@ export default function Navbar() {
 
           {user ? (
             <>
-              {user.role === 'client' ? (
+              {isClientApproved && (
                 <Link to="/client-dashboard" onClick={() => setMobileMenuOpen(false)} className="nav-bubble" style={{
                   fontSize: '1rem',
                   fontWeight: '600',
@@ -489,8 +486,9 @@ export default function Navbar() {
                   textAlign: 'center',
                   boxShadow: 'var(--nav-shadow)',
                   textDecoration: 'none'
-                }}>{user.isGuest ? 'Event Gallery' : 'Client Portal'}</Link>
-              ) : (
+                }}>Client Portal</Link>
+              )}
+              {user.role !== 'client' && (
                 <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="nav-bubble" style={{
                   fontSize: '1rem',
                   fontWeight: '600',
@@ -506,53 +504,35 @@ export default function Navbar() {
                 }}>Admin Dashboard</Link>
               )}
               
-              <div style={{
-                background: 'var(--nav-bg)',
-                border: '1px solid var(--nav-border)',
-                borderRadius: '16px',
-                padding: '1.25rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1rem',
-                boxShadow: 'var(--nav-shadow)'
-              }}>
-                <div style={{ display: 'flex', justifyContent: user.isGuest ? 'center' : 'space-between', alignItems: 'center', width: '100%' }}>
-                  {(!user.isGuest || user.role !== 'client') && (
-                    <div style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-primary)' }}>
-                      {user.role === 'client' ? user.clientName : user.username}
-                    </div>
-                  )}
-                  <div style={{ fontSize: '0.7rem', color: 'var(--gold-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    {user.role === 'client' ? (user.isGuest ? 'guest' : 'client') : user.role}
-                  </div>
-                </div>
-                 <button onClick={handleAuthClick} className={user.isGuest ? "btn btn-gold" : "btn btn-danger"} style={{ width: '100%', borderRadius: '50px', fontSize: '0.8rem', padding: '0.5rem' }}>
-                  {user.isGuest ? <LogIn size={14} /> : <LogOut size={14} />}
-                  <span>{user.isGuest ? 'Sign In' : 'Logout'}</span>
-                </button>
-              </div>
+              <button 
+                onClick={() => { setMobileMenuOpen(false); setProfileSidebarOpen(true); }}
+                style={{
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                  background: 'var(--gold-gradient)',
+                  border: '1px solid var(--gold-primary)',
+                  color: 'var(--bg-deep)',
+                  borderRadius: '50px',
+                  padding: '0.75rem 1.5rem',
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  boxShadow: 'var(--gold-glow)',
+                  width: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  outline: 'none'
+                }}
+              >
+                <User size={16} />
+                <span>My Account</span>
+              </button>
             </>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>
-              <Link to="/client-login" onClick={() => setMobileMenuOpen(false)} className="nav-bubble" style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                fontSize: '1rem',
-                fontWeight: '600',
-                color: 'var(--text-primary)',
-                textTransform: 'uppercase',
-                background: 'var(--nav-bg)',
-                border: '1px solid var(--nav-border)',
-                borderRadius: '50px',
-                padding: '0.6rem 1.5rem',
-                boxShadow: 'var(--nav-shadow)',
-                textDecoration: 'none'
-              }}>
-                <User size={16} />
-                <span>Client Portal</span>
-              </Link>
               <Link to="/guest-login" onClick={() => setMobileMenuOpen(false)} className="nav-bubble-gold" style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -560,12 +540,12 @@ export default function Navbar() {
                 gap: '0.5rem',
                 fontSize: '1rem',
                 fontWeight: '600',
-                color: 'var(--bg-deep)',
                 textTransform: 'uppercase',
                 background: 'var(--gold-gradient)',
                 border: '1px solid var(--gold-primary)',
                 borderRadius: '50px',
                 padding: '0.6rem 1.5rem',
+                color: 'var(--bg-deep)',
                 boxShadow: 'var(--gold-glow)',
                 textDecoration: 'none'
               }}>
@@ -623,6 +603,311 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      {/* Profile Sidebar Backdrop */}
+      {profileSidebarOpen && (
+        <div 
+          onClick={() => setProfileSidebarOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 1000,
+            transition: 'opacity 0.3s ease'
+          }}
+        />
+      )}
+
+      {/* Profile Sidebar Drawer */}
+      <div 
+        style={{
+          position: 'fixed',
+          top: 0,
+          right: profileSidebarOpen ? 0 : '-420px',
+          width: '100%',
+          maxWidth: '400px',
+          height: '100vh',
+          backgroundColor: '#0a0a0a',
+          borderLeft: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '-10px 0 30px rgba(0, 0, 0, 0.5)',
+          zIndex: 1001,
+          transition: 'right 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          display: 'flex',
+          flexDirection: 'column',
+          color: 'var(--text-primary)',
+          padding: '2rem 1.5rem'
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: '600', color: 'var(--text-primary)', margin: 0 }}>My Account</h3>
+          <button 
+            onClick={() => setProfileSidebarOpen(false)}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--text-secondary)',
+              cursor: 'pointer',
+              padding: '0.25rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              outline: 'none'
+            }}
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* User Card */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          textAlign: 'center',
+          padding: '1.5rem',
+          backgroundColor: 'rgba(255, 255, 255, 0.02)',
+          border: '1px solid rgba(255, 255, 255, 0.05)',
+          borderRadius: '16px',
+          marginBottom: '2rem'
+        }}>
+          <img 
+            src={user?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"} 
+            alt={user?.clientName || user?.username} 
+            style={{
+              width: '72px',
+              height: '72px',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: '2px solid var(--gold-primary)',
+              marginBottom: '1rem',
+              boxShadow: 'var(--gold-glow)'
+            }}
+          />
+          <h4 style={{ margin: '0 0 0.25rem', fontSize: '1.1rem', fontWeight: '600' }}>
+            {user?.role === 'client' ? user.clientName : user?.username}
+          </h4>
+          <p style={{ margin: '0 0 0.75rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            {user?.email}
+          </p>
+          <span style={{
+            fontSize: '0.7rem',
+            textTransform: 'uppercase',
+            letterSpacing: '0.5px',
+            backgroundColor: isClientApproved ? 'rgba(212, 175, 55, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+            color: isClientApproved ? 'var(--gold-primary)' : 'var(--text-secondary)',
+            border: isClientApproved ? '1px solid rgba(212, 175, 55, 0.3)' : '1px solid rgba(255, 255, 255, 0.12)',
+            padding: '0.3rem 0.8rem',
+            borderRadius: '50px',
+            fontWeight: '600'
+          }}>
+            {user?.role === 'client' ? (isClientApproved ? 'Approved Client' : 'Event Guest') : user?.role}
+          </span>
+        </div>
+
+        {/* Scrollable Request / Info Area */}
+        <div style={{ flex: 1, overflowY: 'auto', marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          
+          {/* Request Client Access Form (Only if not already an approved client) */}
+          {!isClientApproved && user?.role === 'client' && (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem',
+              padding: '1.25rem',
+              backgroundColor: 'rgba(212, 175, 55, 0.02)',
+              border: '1px solid rgba(212, 175, 55, 0.1)',
+              borderRadius: '16px'
+            }}>
+              <h5 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '600', color: 'var(--gold-light)' }}>
+                Request Client Portal Access
+              </h5>
+              <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                If you are the groom, bride, or event owner, select your wedding below to request full client portal permissions.
+              </p>
+              
+              <form onSubmit={handleRequestSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                  <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: '500' }}>Select Your Wedding</label>
+                  <select 
+                    required
+                    value={selectedEventId}
+                    onChange={e => setSelectedEventId(e.target.value)}
+                    style={{
+                      backgroundColor: '#121212',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      color: 'var(--text-primary)',
+                      padding: '0.55rem',
+                      borderRadius: '8px',
+                      fontSize: '0.8rem',
+                      outline: 'none',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="">-- Choose Wedding --</option>
+                    {(events || []).map(evt => (
+                      <option key={evt.id} value={evt.id}>{evt.name}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                  <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', fontWeight: '500' }}>Message to Admins</label>
+                  <textarea 
+                    rows={2}
+                    placeholder="e.g. Requesting client dashboard access as the Groom."
+                    value={requestMessage}
+                    onChange={e => setRequestMessage(e.target.value)}
+                    style={{
+                      backgroundColor: '#121212',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      color: 'var(--text-primary)',
+                      padding: '0.55rem',
+                      borderRadius: '8px',
+                      fontSize: '0.8rem',
+                      outline: 'none',
+                      resize: 'none'
+                    }}
+                  />
+                </div>
+                
+                <button 
+                  type="submit" 
+                  disabled={submittingRequest}
+                  style={{
+                    backgroundColor: 'var(--gold-primary)',
+                    color: 'var(--bg-deep)',
+                    fontWeight: '600',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '0.6rem',
+                    fontSize: '0.8rem',
+                    cursor: 'pointer',
+                    transition: 'var(--transition-smooth)',
+                    boxShadow: 'var(--gold-glow)'
+                  }}
+                >
+                  {submittingRequest ? 'Submitting...' : 'Submit Request'}
+                </button>
+              </form>
+            </div>
+          )}
+
+          {/* Access Requests History */}
+          {myRequests.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <h5 style={{ margin: 0, fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-secondary)' }}>
+                Access Requests Status
+              </h5>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                {myRequests.map(req => {
+                  const evt = events.find(e => e.id === req.event_id);
+                  const isApproved = req.status === 'approved';
+                  const isRejected = req.status === 'rejected';
+                  const statusColor = isApproved ? '#22c55e' : isRejected ? '#ef4444' : '#eab308';
+                  
+                  return (
+                    <div 
+                      key={req.id} 
+                      style={{
+                        padding: '0.85rem 1rem',
+                        backgroundColor: 'rgba(255, 255, 255, 0.01)',
+                        border: '1px solid rgba(255, 255, 255, 0.04)',
+                        borderRadius: '12px',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                        <span style={{ fontSize: '0.85rem', fontWeight: '500' }}>{evt?.name || req.event_id}</span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>
+                          {new Date(req.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <span style={{
+                        fontSize: '0.7rem',
+                        fontWeight: '600',
+                        textTransform: 'uppercase',
+                        padding: '0.2rem 0.5rem',
+                        borderRadius: '4px',
+                        backgroundColor: `${statusColor}1A`,
+                        border: `1px solid ${statusColor}4D`,
+                        color: statusColor
+                      }}>
+                        {req.status}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer Actions */}
+        <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {/* Account Switching Option */}
+          <button 
+            type="button"
+            onClick={() => {
+              setProfileSidebarOpen(false);
+              logout();
+              navigate('/guest-login');
+            }}
+            style={{
+              width: '100%',
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              color: 'var(--text-primary)',
+              borderRadius: '50px',
+              padding: '0.65rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              fontSize: '0.8rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              transition: 'var(--transition-smooth)'
+            }}
+          >
+            <span>Switch Account</span>
+          </button>
+          
+          {/* Logout */}
+          <button 
+            type="button"
+            onClick={() => {
+              setProfileSidebarOpen(false);
+              handleLogout();
+            }}
+            style={{
+              width: '100%',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              color: '#ef4444',
+              borderRadius: '50px',
+              padding: '0.65rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              fontSize: '0.8rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              transition: 'var(--transition-smooth)'
+            }}
+          >
+            <LogOut size={14} />
+            <span>Sign Out</span>
+          </button>
+        </div>
+      </div>
     </nav>
   );
 }

@@ -52,7 +52,7 @@ export default function ClientLogin() {
         email: matchedEvent.email
       };
       if (setUser) setUser(clientUser);
-      sessionStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
+      localStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
       if (addNotification) {
         addNotification("Access Granted", `Successfully authenticated via Google for event "${matchedEvent.name}"`, "success");
       }

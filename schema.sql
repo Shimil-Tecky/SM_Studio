@@ -173,3 +173,16 @@ CREATE TABLE guest_logins (
 );
 
 ALTER TABLE guest_logins DISABLE ROW LEVEL SECURITY;
+
+-- 11. Create Client Requests Table
+CREATE TABLE client_requests (
+  id SERIAL PRIMARY KEY,
+  guest_name TEXT NOT NULL,
+  guest_email TEXT NOT NULL,
+  event_id TEXT REFERENCES events(id) ON DELETE CASCADE,
+  message TEXT,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE client_requests DISABLE ROW LEVEL SECURITY;

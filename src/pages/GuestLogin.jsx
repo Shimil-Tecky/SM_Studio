@@ -88,7 +88,7 @@ export default function GuestLogin() {
       };
 
       setUser(registeredUser);
-      sessionStorage.setItem('antigravity_current_user', JSON.stringify(registeredUser));
+      localStorage.setItem('antigravity_current_user', JSON.stringify(registeredUser));
 
       addNotification("Guest Sign-in", `Welcome to the gallery, ${googleUser.name}!`, "success");
       setSuccess(`Signed in successfully as ${googleUser.name}! Opening gallery...`);

@@ -382,8 +382,8 @@ export const AppProvider = ({ children }) => {
               localStorage.setItem('antigravity_current_user', JSON.stringify(clientUser));
             }
 
-            // Only notify and redirect if they are on a login page or it's a SIGNED_IN event
-            if (onLoginPage || isSignInEvent) {
+            // Only notify and redirect if they are on a login page
+            if (onLoginPage) {
               if (!isAlreadyLoggedIn) {
                 addNotification("Google Login", `Logged in as client for ${matchedEvent.name}`, "success");
               }
@@ -422,9 +422,8 @@ export const AppProvider = ({ children }) => {
               localStorage.removeItem('google_auth_target_event_id');
               
               const onLoginPage = window.location.pathname === '/client-login' || window.location.pathname === '/guest-login';
-              const isSignInEvent = event === 'SIGNED_IN';
               
-              if (onLoginPage || isSignInEvent) {
+              if (onLoginPage) {
                 addNotification("Google Login", `Logged in as guest for ${matchedEventGuest?.name || 'Gallery'}`, "success");
                 
                 // Only redirect if we are not already on the correct dashboard page with the correct event id

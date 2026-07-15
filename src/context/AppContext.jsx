@@ -325,7 +325,7 @@ export const AppProvider = ({ children }) => {
 
   // Sync user login session state locally
   useEffect(() => {
-    const savedUser = localStorage.getItem('antigravity_current_user');
+    const savedUser = sessionStorage.getItem('antigravity_current_user') || localStorage.getItem('antigravity_current_user');
     if (savedUser) setUser(JSON.parse(savedUser));
   }, []);
 
@@ -453,9 +453,14 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     try {
       if (user) {
-        localStorage.setItem('antigravity_current_user', JSON.stringify(user));
+        if (user.role === 'client') {
+          localStorage.setItem('antigravity_current_user', JSON.stringify(user));
+        } else {
+          sessionStorage.setItem('antigravity_current_user', JSON.stringify(user));
+        }
       } else {
         localStorage.removeItem('antigravity_current_user');
+        sessionStorage.removeItem('antigravity_current_user');
       }
     } catch (e) {
       console.warn("Storage error: failed to save current user", e);

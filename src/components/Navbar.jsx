@@ -258,36 +258,74 @@ export default function Navbar() {
                 {isClientApproved && (
                   <Link to="/client-dashboard" style={getBubbleStyle('/client-dashboard')} className="nav-bubble">Client Portal</Link>
                 )}
-                {user.role !== 'client' && (
-                  <Link to="/admin" style={getBubbleStyle('/admin')} className="nav-bubble">Admin Dashboard</Link>
-                )}
                 
-                <button 
-                  onClick={() => setProfileSidebarOpen(true)}
-                  style={{
-                    background: 'none',
-                    border: 'none',
-                    padding: 0,
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    outline: 'none',
-                    marginLeft: '0.5rem'
-                  }}
-                >
-                  <img 
-                    src={user.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"} 
-                    alt={user.clientName || user.username}
+                {user.role === 'client' ? (
+                  <button 
+                    onClick={() => setProfileSidebarOpen(true)}
                     style={{
-                      width: '38px',
-                      height: '38px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '1.5px solid var(--gold-primary)',
-                      boxShadow: 'var(--gold-glow)'
+                      background: 'none',
+                      border: 'none',
+                      padding: 0,
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      outline: 'none',
+                      marginLeft: '0.5rem'
                     }}
-                  />
-                </button>
+                  >
+                    <img 
+                      src={user.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150"} 
+                      alt={user.clientName || user.username}
+                      style={{
+                        width: '38px',
+                        height: '38px',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '1.5px solid var(--gold-primary)',
+                        boxShadow: 'var(--gold-glow)'
+                      }}
+                    />
+                  </button>
+                ) : (
+                  <div style={{
+                    background: 'var(--nav-bg)',
+                    backdropFilter: 'blur(10px)',
+                    WebkitBackdropFilter: 'blur(10px)',
+                    border: '1px solid var(--nav-border)',
+                    borderRadius: '50px',
+                    padding: '0.4rem 1.25rem',
+                    boxShadow: 'var(--nav-shadow)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    marginLeft: '0.5rem'
+                  }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                      <span style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-primary)' }}>
+                        {user.username}
+                      </span>
+                      <span style={{ fontSize: '0.65rem', color: 'var(--gold-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        {user.role}
+                      </span>
+                    </div>
+                    <button onClick={handleLogout} style={{
+                      background: 'rgba(220, 38, 38, 0.15)',
+                      border: '1px solid rgba(220, 38, 38, 0.4)',
+                      color: '#ef4444',
+                      padding: '0.35rem 0.85rem',
+                      fontSize: '0.75rem',
+                      borderRadius: '50px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      transition: 'var(--transition-smooth)'
+                    }} className="logout-btn">
+                      <LogOut size={12} />
+                      <span>Logout</span>
+                    </button>
+                  </div>
+                )}
               </>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -488,48 +526,60 @@ export default function Navbar() {
                   textDecoration: 'none'
                 }}>Client Portal</Link>
               )}
-              {user.role !== 'client' && (
-                <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="nav-bubble" style={{
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  color: 'var(--text-primary)',
-                  textTransform: 'uppercase',
+              {/* Admin Dashboard link removed to prevent exposing admin panel on public page viewports */}
+              
+              {user.role === 'client' ? (
+                <button 
+                  onClick={() => { setMobileMenuOpen(false); setProfileSidebarOpen(true); }}
+                  style={{
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    textTransform: 'uppercase',
+                    letterSpacing: '1px',
+                    background: 'var(--gold-gradient)',
+                    border: '1px solid var(--gold-primary)',
+                    color: 'var(--bg-deep)',
+                    borderRadius: '50px',
+                    padding: '0.75rem 1.5rem',
+                    cursor: 'pointer',
+                    textAlign: 'center',
+                    boxShadow: 'var(--gold-glow)',
+                    width: '100%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    outline: 'none'
+                  }}
+                >
+                  <User size={16} />
+                  <span>My Account</span>
+                </button>
+              ) : (
+                <div style={{
                   background: 'var(--nav-bg)',
                   border: '1px solid var(--nav-border)',
-                  borderRadius: '50px',
-                  padding: '0.6rem 1.5rem',
-                  textAlign: 'center',
-                  boxShadow: 'var(--nav-shadow)',
-                  textDecoration: 'none'
-                }}>Admin Dashboard</Link>
-              )}
-              
-              <button 
-                onClick={() => { setMobileMenuOpen(false); setProfileSidebarOpen(true); }}
-                style={{
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px',
-                  background: 'var(--gold-gradient)',
-                  border: '1px solid var(--gold-primary)',
-                  color: 'var(--bg-deep)',
-                  borderRadius: '50px',
-                  padding: '0.75rem 1.5rem',
-                  cursor: 'pointer',
-                  textAlign: 'center',
-                  boxShadow: 'var(--gold-glow)',
-                  width: '100%',
+                  borderRadius: '16px',
+                  padding: '1.25rem',
                   display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
-                  outline: 'none'
-                }}
-              >
-                <User size={16} />
-                <span>My Account</span>
-              </button>
+                  flexDirection: 'column',
+                  gap: '1rem',
+                  boxShadow: 'var(--nav-shadow)'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                    <div style={{ fontSize: '0.9rem', fontWeight: '600', color: 'var(--text-primary)' }}>
+                      {user.username}
+                    </div>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--gold-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      {user.role}
+                    </div>
+                  </div>
+                  <button onClick={handleLogout} className="btn btn-danger" style={{ width: '100%', borderRadius: '50px', fontSize: '0.8rem', padding: '0.5rem' }}>
+                    <LogOut size={14} />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              )}
             </>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '1px solid var(--border-color)', paddingTop: '1.5rem' }}>

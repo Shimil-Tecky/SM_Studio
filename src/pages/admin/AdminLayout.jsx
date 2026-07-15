@@ -5,17 +5,15 @@ import AdminSidebar from '../../components/AdminSidebar';
 import { ShieldAlert } from 'lucide-react';
 
 export default function AdminLayout() {
-  const { user, dataLoaded } = useContext(AppContext);
+  const { user } = useContext(AppContext);
   const navigate = useNavigate();
 
   // Route protection
   useEffect(() => {
-    if (!dataLoaded) return;
-
     if (!user || (user.role !== 'Super Admin' && user.role !== 'Event Admin' && user.role !== 'Editor' && user.role !== 'Employee')) {
       navigate('/admin/login', { replace: true });
     }
-  }, [user, navigate, dataLoaded]);
+  }, [user, navigate]);
 
   const isAdmin = user && (user.role === 'Super Admin' || user.role === 'Event Admin' || user.role === 'Editor' || user.role === 'Employee');
 

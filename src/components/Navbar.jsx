@@ -54,7 +54,8 @@ export default function Navbar() {
 
 
 
-  const showBackButton = location.pathname !== '/';
+  const isGalleryPage = location.pathname === '/client-dashboard';
+  const showBackButton = location.pathname !== '/' && !isGalleryPage;
 
   return (
     <nav style={{
@@ -189,162 +190,180 @@ export default function Navbar() {
         }
       `}} />
         <Link to="/" style={getBubbleStyle('/')} className="nav-bubble">Home</Link>
-        <Link to="/portfolio" style={getBubbleStyle('/portfolio')} className="nav-bubble">Portfolio</Link>
-        <Link to="/events" style={getBubbleStyle('/events')} className="nav-bubble">Events</Link>
-        
-        {user ? (
+        {!isGalleryPage && (
           <>
-            {user.role === 'client' ? (
-              <Link to="/client-dashboard" style={getBubbleStyle('/client-dashboard')} className="nav-bubble">{user.isGuest ? 'Event Gallery' : 'Client Portal'}</Link>
-            ) : (
-              <Link to="/admin" style={getBubbleStyle('/admin')} className="nav-bubble">Admin Dashboard</Link>
-            )}
+            <Link to="/portfolio" style={getBubbleStyle('/portfolio')} className="nav-bubble">Portfolio</Link>
+            <Link to="/events" style={getBubbleStyle('/events')} className="nav-bubble">Events</Link>
             
-            <div style={{
-              background: 'var(--nav-bg)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              border: '1px solid var(--nav-border)',
-              borderRadius: '50px',
-              padding: '0.4rem 1.25rem',
-              boxShadow: 'var(--nav-shadow)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem'
-            }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                {(!user.isGuest || user.role !== 'client') && (
-                  <span style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-primary)' }}>
-                    {user.role === 'client' ? user.clientName : user.username}
-                  </span>
+            {user ? (
+              <>
+                {user.role === 'client' ? (
+                  <Link to="/client-dashboard" style={getBubbleStyle('/client-dashboard')} className="nav-bubble">{user.isGuest ? 'Event Gallery' : 'Client Portal'}</Link>
+                ) : (
+                  <Link to="/admin" style={getBubbleStyle('/admin')} className="nav-bubble">Admin Dashboard</Link>
                 )}
-                <span style={{ fontSize: '0.65rem', color: 'var(--gold-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  {user.role === 'client' ? (user.isGuest ? 'guest' : 'client') : user.role}
-                </span>
+                
+                <div style={{
+                  background: 'var(--nav-bg)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: '1px solid var(--nav-border)',
+                  borderRadius: '50px',
+                  padding: '0.4rem 1.25rem',
+                  boxShadow: 'var(--nav-shadow)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '1rem'
+                }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                    {(!user.isGuest || user.role !== 'client') && (
+                      <span style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-primary)' }}>
+                        {user.role === 'client' ? user.clientName : user.username}
+                      </span>
+                    )}
+                    <span style={{ fontSize: '0.65rem', color: 'var(--gold-primary)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      {user.role === 'client' ? (user.isGuest ? 'guest' : 'client') : user.role}
+                    </span>
+                  </div>
+                  <button onClick={handleAuthClick} style={{
+                    background: user.isGuest ? 'rgba(212, 175, 55, 0.15)' : 'rgba(220, 38, 38, 0.15)',
+                    border: user.isGuest ? '1px solid rgba(212, 175, 55, 0.4)' : '1px solid rgba(220, 38, 38, 0.4)',
+                    color: user.isGuest ? 'var(--gold-primary)' : '#ef4444',
+                    padding: '0.3rem 0.75rem',
+                    fontSize: '0.75rem',
+                    borderRadius: '50px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    transition: 'var(--transition-smooth)'
+                  }} className={user.isGuest ? "signin-btn" : "logout-btn"}>
+                    {user.isGuest ? <LogIn size={12} /> : <LogOut size={12} />}
+                    <span>{user.isGuest ? 'Sign In' : 'Logout'}</span>
+                  </button>
+                </div>
+              </>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <Link to="/client-login" className="nav-bubble" style={{
+                  fontSize: '0.85rem',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                  background: 'var(--nav-bg)',
+                  backdropFilter: 'blur(10px)',
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: '1px solid var(--nav-border)',
+                  borderRadius: '50px',
+                  padding: '0.55rem 1.3rem',
+                  color: 'var(--text-secondary)',
+                  boxShadow: 'var(--nav-shadow)',
+                  transition: 'var(--transition-smooth)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  cursor: 'pointer'
+                }}>
+                  <User size={14} />
+                  <span>Client Portal</span>
+                </Link>
+                <Link to="/guest-login" className="nav-bubble-gold" style={{
+                  fontSize: '0.85rem',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1px',
+                  background: 'var(--gold-gradient)',
+                  border: '1px solid var(--gold-primary)',
+                  borderRadius: '50px',
+                  padding: '0.55rem 1.3rem',
+                  color: 'var(--bg-deep)',
+                  boxShadow: 'var(--gold-glow)',
+                  transition: 'var(--transition-smooth)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  cursor: 'pointer'
+                }}>
+                  <LogIn size={14} />
+                  <span>Guest Login</span>
+                </Link>
               </div>
-              <button onClick={handleAuthClick} style={{
-                background: user.isGuest ? 'rgba(212, 175, 55, 0.15)' : 'rgba(220, 38, 38, 0.15)',
-                border: user.isGuest ? '1px solid rgba(212, 175, 55, 0.4)' : '1px solid rgba(220, 38, 38, 0.4)',
-                color: user.isGuest ? 'var(--gold-primary)' : '#ef4444',
-                padding: '0.3rem 0.75rem',
-                fontSize: '0.75rem',
-                borderRadius: '50px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                transition: 'var(--transition-smooth)'
-              }} className={user.isGuest ? "signin-btn" : "logout-btn"}>
-                {user.isGuest ? <LogIn size={12} /> : <LogOut size={12} />}
-                <span>{user.isGuest ? 'Sign In' : 'Logout'}</span>
+            )}
+
+            {/* Mini Light Mode Toggle (On/Off Switch) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: '0.5rem' }} title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}>
+              <span style={{ fontSize: '0.75rem', opacity: theme === 'light' ? 0.4 : 1, transition: 'opacity 0.3s ease' }}>🌙</span>
+              <button
+                onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                style={{
+                  width: '40px',
+                  height: '22px',
+                  borderRadius: '50px',
+                  backgroundColor: theme === 'light' ? 'var(--gold-primary)' : 'rgba(255,255,255,0.12)',
+                  border: '1px solid var(--nav-border)',
+                  position: 'relative',
+                  cursor: 'pointer',
+                  outline: 'none',
+                  padding: 0,
+                  transition: 'background-color 0.3s ease',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}
+              >
+                <div style={{
+                  width: '16px',
+                  height: '16px',
+                  borderRadius: '50%',
+                  backgroundColor: theme === 'light' ? '#000' : 'var(--gold-primary)',
+                  position: 'absolute',
+                  top: '2px',
+                  left: theme === 'light' ? '20px' : '2px',
+                  transition: 'left 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.25)'
+                }} />
               </button>
+              <span style={{ fontSize: '0.75rem', opacity: theme === 'light' ? 1 : 0.4, transition: 'opacity 0.3s ease' }}>☀️</span>
             </div>
           </>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <Link to="/client-login" className="nav-bubble" style={{
-              fontSize: '0.85rem',
-              fontWeight: '600',
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              background: 'var(--nav-bg)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              border: '1px solid var(--nav-border)',
-              borderRadius: '50px',
-              padding: '0.55rem 1.3rem',
-              color: 'var(--text-secondary)',
-              boxShadow: 'var(--nav-shadow)',
-              transition: 'var(--transition-smooth)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              cursor: 'pointer'
-            }}>
-              <User size={14} />
-              <span>Client Portal</span>
-            </Link>
-            <Link to="/guest-login" className="nav-bubble-gold" style={{
-              fontSize: '0.85rem',
-              fontWeight: '600',
-              textTransform: 'uppercase',
-              letterSpacing: '1px',
-              background: 'var(--gold-gradient)',
-              border: '1px solid var(--gold-primary)',
-              borderRadius: '50px',
-              padding: '0.55rem 1.3rem',
-              color: 'var(--bg-deep)',
-              boxShadow: 'var(--gold-glow)',
-              transition: 'var(--transition-smooth)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              cursor: 'pointer'
-            }}>
-              <LogIn size={14} />
-              <span>Guest Login</span>
-            </Link>
-          </div>
         )}
-        
-        {/* Mini Light Mode Toggle (On/Off Switch) */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginLeft: '0.5rem' }} title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} Mode`}>
-          <span style={{ fontSize: '0.75rem', opacity: theme === 'light' ? 0.4 : 1, transition: 'opacity 0.3s ease' }}>🌙</span>
-          <button
-            onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-            style={{
-              width: '40px',
-              height: '22px',
-              borderRadius: '50px',
-              backgroundColor: theme === 'light' ? 'var(--gold-primary)' : 'rgba(255,255,255,0.12)',
-              border: '1px solid var(--nav-border)',
-              position: 'relative',
-              cursor: 'pointer',
-              outline: 'none',
-              padding: 0,
-              transition: 'background-color 0.3s ease',
-              display: 'flex',
-              alignItems: 'center'
-            }}
-          >
-            <div style={{
-              width: '16px',
-              height: '16px',
-              borderRadius: '50%',
-              backgroundColor: theme === 'light' ? '#000' : 'var(--gold-primary)',
-              position: 'absolute',
-              top: '2px',
-              left: theme === 'light' ? '20px' : '2px',
-              transition: 'left 0.3s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.3s ease',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.25)'
-            }} />
-          </button>
-          <span style={{ fontSize: '0.75rem', opacity: theme === 'light' ? 1 : 0.4, transition: 'opacity 0.3s ease' }}>☀️</span>
-        </div>
       </div>
 
       {/* Mobile Menu Toggle — always rendered, shown via CSS at ≤850px */}
-      <button className="mobile-nav-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{
-        background: 'var(--nav-bg)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        border: '1px solid var(--gold-primary)',
-        borderRadius: '50%',
-        width: '42px',
-        height: '42px',
-        minWidth: '42px',
-        display: 'none',
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: 'var(--gold-primary)',
-        cursor: 'pointer',
-        boxShadow: '0 0 12px rgba(212,175,55,0.25)',
-        transition: 'var(--transition-smooth)',
-        padding: 0,
-        flexShrink: 0
-      }}>
-        {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
+      {!isGalleryPage && (
+        <button className="mobile-nav-toggle" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} style={{
+          background: 'var(--nav-bg)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          border: '1px solid var(--gold-primary)',
+          borderRadius: '50%',
+          width: '42px',
+          height: '42px',
+          minWidth: '42px',
+          display: 'none',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: 'var(--gold-primary)',
+          cursor: 'pointer',
+          boxShadow: '0 0 12px rgba(212,175,55,0.25)',
+          transition: 'var(--transition-smooth)',
+          padding: 0,
+          flexShrink: 0
+        }}>
+          {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      )}
+
+      {/* For gallery page on mobile, show the Home button directly in place of the toggle */}
+      {isGalleryPage && (
+        <div className="mobile-only-home" style={{ display: 'none' }}>
+          <style dangerouslySetInnerHTML={{__html: `
+            @media (max-width: 850px) {
+              .mobile-only-home { display: flex !important; }
+            }
+          `}} />
+          <Link to="/" style={getBubbleStyle('/')} className="nav-bubble">Home</Link>
+        </div>
+      )}
 
       {/* Mobile Menu Panel */}
       {mobileMenuOpen && (

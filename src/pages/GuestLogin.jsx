@@ -19,12 +19,6 @@ export default function GuestLogin() {
   const [selectedEventId, setSelectedEventId] = useState(urlEventId || (user?.eventId) || '');
   const matchedEvent = events.find(e => e.id.toLowerCase() === selectedEventId.toLowerCase());
 
-  // Redirect if already logged in as a registered guest or client (not anonymous guest)
-  useEffect(() => {
-    if (user && !user.isGuest && selectedEventId) {
-      navigate(`/client-dashboard?id=${selectedEventId}`, { replace: true });
-    }
-  }, [user, navigate, selectedEventId]);
 
   const handleGoogleClick = async () => {
     let targetId = selectedEventId;
